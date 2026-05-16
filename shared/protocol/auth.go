@@ -15,13 +15,27 @@ type SessionCreatedResponse struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
+// RegisterRequest describes the request that is sent when user registers.
+type RegisterRequest struct {
+	// Email is user's email.
+	Email string `json:"email" binding:"required,email"`
+	// Password is user's password.
+	Password string `json:"password" binding:"required,min=6,max=64"`
+}
+
+// RegisterResponse describes the response after user is registered. Basically
+// it's a new created session.
+type RegisterResponse struct {
+	SessionCreatedResponse
+}
+
 // LoginRequest describes the request that is sent when user logins into the
 // account.
 type LoginRequest struct {
 	// Email is user's email.
-	Email string `json:"email" validate:"required,email"`
+	Email string `json:"email" binding:"required,email"`
 	// Password is user's password.
-	Password string `json:"password" validate:"required,min=6,max=64"`
+	Password string `json:"password" binding:"required,min=6,max=64"`
 }
 
 // LoginResponse describes the response when user successfully logged into the
