@@ -23,12 +23,12 @@ const (
 	// ProtocolErrorLoginFailed is returned when service was unable to process
 	// login request from the user.
 	ProtocolErrorLoginFailed ProtocolErrorCode = "LOGIN_FAILED"
-	// ProtocolErrorUserNotFound is an error code that indicates that the
-	// requested user was not found.
-	ProtocolErrorUserNotFound ProtocolErrorCode = "USER_NOT_FOUND"
-	// ProtocolErrorInvalidPassword is an error code that indicates that the
-	// provided password is invalid.
-	ProtocolErrorInvalidPassword ProtocolErrorCode = "INVALID_PASSWORD"
+	// ProtocolErrorUnauthorized is returned when user was not authorized to
+	// perform this request. This is a generic error code.
+	ProtocolErrorUnauthorized ProtocolErrorCode = "UNAUTHORIZED"
+	// ProtocolErrorSessionValidationFailed is returned when service was unable
+	// to validate the session.
+	ProtocolErrorSessionValidationFailed ProtocolErrorCode = "SESSION_VALIDATION_FAILED"
 )
 
 // ProtocolError describes the payload of the error response.

@@ -45,7 +45,5 @@ func LoadConfig() (*AppConfig, error) {
 		return nil, fmt.Errorf("failed to unmarshal configuration: %w", err)
 	}
 
-	fmt.Printf("%+v\n", cfg)
-
 	return &cfg, nil
 }

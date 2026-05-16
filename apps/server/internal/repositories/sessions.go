@@ -2,13 +2,21 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/Pelfox/gophkeeper/apps/server/internal/models"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+var (
+	// ErrSessionNotFound is returned when session for the given conditions was
+	// not found.
+	ErrSessionNotFound = errors.New("session not found")
 )
 
 // CreateSessionInput describes the parameters used for session creation.
@@ -30,6 +38,11 @@ type SessionsRepository interface {
 	) (*models.Session, error)
 	// GetForUser returns all session associated with the given user.
 	GetForUser(ctx context.Context, userID uuid.UUID) ([]models.Session, error)
+	// FindByAccessToken finds session that is tied to the specific access token.
+	FindByAccessToken(
+		ctx context.Context,
+		accessToken string,
+	) (*models.Session, error)
 }
 
 type sessionsRepository struct {
@@ -112,4 +125,29 @@ func (r *sessionsRepository) GetForUser(
 	}
 
 	return sessions, nil
+}
+
+func (r *sessionsRepository) FindByAccessToken(
+	ctx context.Context,
+	accessToken string,
+) (*models.Session, error) {
+	query, args, err := r.sq.Select("id", "user_id", "created_at", "expires_at").
+		From("sessions").
+		Where(squirrel.Eq{"access_token": accessToken}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	session := models.Session{AccessToken: accessToken}
+	err = r.pool.QueryRow(ctx, query, args...).
+		Scan(&session.ID, &session.UserID, &session.CreatedAt, &session.ExpiresAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrSessionNotFound
+		}
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	return &session, nil
 }

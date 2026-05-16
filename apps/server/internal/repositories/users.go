@@ -44,6 +44,8 @@ type UsersRepository interface {
 	// FindByEmail finds user by the supplied email. It returns ErrUserNotFound
 	// if no matching user exists.
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
+	// GetByID retrieves user by the given ID.
+	GetByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	// Update updates existing user with the new information.
 	Update(
 		ctx context.Context,
@@ -113,6 +115,33 @@ func (r *usersRepository) FindByEmail(
 	user := models.User{Email: email}
 	err = r.pool.QueryRow(ctx, query, args...).
 		Scan(&user.ID, &user.PasswordHash, &user.CreatedAt, &user.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (r *usersRepository) GetByID(
+	ctx context.Context,
+	id uuid.UUID,
+) (*models.User, error) {
+	query, args, err := r.sq.
+		Select("email", "password_hash", "created_at", "updated_at").
+		From("users").
+		Where(squirrel.Eq{"id": id}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	user := models.User{ID: id}
+
+	err = r.pool.QueryRow(ctx, query, args...).
+		Scan(&user.Email, &user.PasswordHash, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrUserNotFound

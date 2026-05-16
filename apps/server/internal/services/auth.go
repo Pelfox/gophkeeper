@@ -41,6 +41,11 @@ var (
 	// ErrPasswordVerificationFailed is returned whtn service was unable to
 	// verify user's password.
 	ErrPasswordVerificationFailed = errors.New("failed to verify the password")
+	// ErrSessionNotFound is returned when session was not found.
+	ErrSessionNotFound = errors.New("session not found")
+	// ErrSessionQueryFailed is returned when service was not able to query the
+	// session.
+	ErrSessionQueryFailed = errors.New("failed to query the session")
 )
 
 // User describes protocol-compatible user structure.
@@ -63,16 +68,6 @@ type RegisterInput struct {
 	Password string
 }
 
-// RegisterResult describes the result of the registration.
-type RegisterResult struct {
-	// User is a registered user.
-	User User
-	// AccessToken is created session's access token.
-	AccessToken string
-	// ExpiresAt is a timestamp when this session expires.
-	ExpiresAt time.Time
-}
-
 // LoginInput describes input parameters for logging user in.
 type LoginInput struct {
 	// Email is user's email.
@@ -81,11 +76,11 @@ type LoginInput struct {
 	Password string
 }
 
-// LoginResult describes the result of the login.
-type LoginResult struct {
-	// User is a logged in user.
+// SessionResult describes a single unique session.
+type SessionResult struct {
+	// User is a user that associated with the session.
 	User User
-	// AccessToken is created session's access token.
+	// AccessToken is session's access token.
 	AccessToken string
 	// ExpiresAt is a timestamp when this session expires.
 	ExpiresAt time.Time
@@ -94,9 +89,11 @@ type LoginResult struct {
 // AuthService describes all auth-related operations.
 type AuthService interface {
 	// Register creates a new user as well as a new session and returns them.
-	Register(ctx context.Context, request RegisterInput) (*RegisterResult, error)
+	Register(ctx context.Context, request RegisterInput) (*SessionResult, error)
 	// Login logs user in, creating a new session.
-	Login(ctx context.Context, request LoginInput) (*LoginResult, error)
+	Login(ctx context.Context, request LoginInput) (*SessionResult, error)
+	// VerifySession verifies session using given access token and returns it.
+	VerifySession(ctx context.Context, accessToken string) (*SessionResult, error)
 }
 
 type authService struct {
@@ -155,7 +152,7 @@ func (s *authService) createAccessToken(
 func (s *authService) Register(
 	ctx context.Context,
 	request RegisterInput,
-) (*RegisterResult, error) {
+) (*SessionResult, error) {
 	passwordHash, err := crypto.HashPassword(request.Password)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to hash the password")
@@ -190,7 +187,7 @@ func (s *authService) Register(
 		return nil, ErrSessionCreationFailed
 	}
 
-	result := RegisterResult{
+	result := SessionResult{
 		User: User{
 			ID:        user.ID,
 			Email:     user.Email,
@@ -206,7 +203,7 @@ func (s *authService) Register(
 func (s *authService) Login(
 	ctx context.Context,
 	request LoginInput,
-) (*LoginResult, error) {
+) (*SessionResult, error) {
 	user, err := s.usersRepository.FindByEmail(ctx, request.Email)
 	if err != nil {
 		if errors.Is(err, repositories.ErrUserNotFound) {
@@ -242,7 +239,49 @@ func (s *authService) Login(
 		return nil, ErrSessionCreationFailed
 	}
 
-	result := LoginResult{
+	result := SessionResult{
+		User: User{
+			ID:        user.ID,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+		AccessToken: session.AccessToken,
+		ExpiresAt:   session.ExpiresAt,
+	}
+	return &result, nil
+}
+
+func (s *authService) VerifySession(
+	ctx context.Context,
+	accessToken string,
+) (*SessionResult, error) {
+	session, err := s.sessionsRepository.FindByAccessToken(ctx, accessToken)
+	if err != nil {
+		if errors.Is(err, repositories.ErrSessionNotFound) {
+			return nil, ErrSessionNotFound
+		}
+		s.logger.Error().Err(err).Msg("failed to query the session")
+		return nil, ErrSessionQueryFailed
+	}
+
+	user, err := s.usersRepository.GetByID(ctx, session.UserID)
+	if err != nil {
+		if errors.Is(err, repositories.ErrUserNotFound) {
+			// If user wasn't found then this session is basically obsolete.
+			s.logger.Warn().Str("session_id", session.ID.String()).
+				Str("user_id", session.UserID.String()).
+				Msg("got an absolete session")
+			return nil, ErrSessionNotFound
+		}
+		s.logger.Error().Err(err).
+			Str("session_id", session.ID.String()).
+			Str("user_id", session.UserID.String()).
+			Msg("failed to query the user")
+		return nil, ErrUserQueryFailed
+	}
+
+	result := SessionResult{
 		User: User{
 			ID:        user.ID,
 			Email:     user.Email,

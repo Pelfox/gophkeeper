@@ -7,6 +7,7 @@ import (
 	"github.com/Pelfox/gophkeeper/apps/server/internal/config"
 	"github.com/Pelfox/gophkeeper/apps/server/internal/controllers"
 	"github.com/Pelfox/gophkeeper/apps/server/internal/database"
+	"github.com/Pelfox/gophkeeper/apps/server/internal/middlewares"
 	"github.com/Pelfox/gophkeeper/apps/server/internal/repositories"
 	"github.com/Pelfox/gophkeeper/apps/server/internal/services"
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,10 @@ func StartApp(cfg *config.AppConfig, logger zerolog.Logger) error {
 	// Grouping routes and controllers.
 	authGroup := router.Group("/auth")
 	controllers.NewAuthController(authService).RegisterRoutes(authGroup)
+
+	// Grouping all routes and controllers that require auth.
+	authorizedRoutesGroup := router.Group("")
+	authorizedRoutesGroup.Use(middlewares.AuthMiddleware(authService))
 
 	return router.Run(cfg.ListenAddr)
 }
