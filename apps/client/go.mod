@@ -5,6 +5,7 @@ go 1.26.3
 require (
 	github.com/oapi-codegen/runtime v1.4.0
 	github.com/spf13/cobra v1.10.2
+	golang.org/x/crypto v0.51.0
 	golang.org/x/term v0.43.0
 )
 
