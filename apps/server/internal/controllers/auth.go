@@ -27,6 +27,18 @@ func (c *AuthController) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/login", c.login)
 }
 
+// register godoc
+// @Summary Registers a new user.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body protocol.RegisterRequest true "Registration payload"
+// @Success 201 {object} protocol.RegisterResponse
+// @Failure 400 {object} protocol.ProtocolError
+// @Failure 409 {object} protocol.ProtocolError
+// @Failure 422 {object} protocol.ProtocolError
+// @Failure 500 {object} protocol.ProtocolError
+// @Router /auth/register [post]
 func (c *AuthController) register(ctx *gin.Context) {
 	var request protocol.RegisterRequest
 	if !bindAndValidate(ctx, &request) {
@@ -39,13 +51,13 @@ func (c *AuthController) register(ctx *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, services.ErrDuplicateUser) {
-			ctx.JSON(http.StatusConflict, protocol.ProtocolError{
+			ctx.AbortWithStatusJSON(http.StatusConflict, protocol.ProtocolError{
 				Code:    protocol.ProtocolErrorDuplicateUser,
 				Message: "User with the same email address already exist.",
 			})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, protocol.ProtocolError{
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, protocol.ProtocolError{
 			Code:    protocol.ProtocolErrorRegistrationFailed,
 			Message: "Something went wrong.",
 		})
@@ -66,8 +78,19 @@ func (c *AuthController) register(ctx *gin.Context) {
 	})
 }
 
+// login godoc
+// @Summary Logins user into their account.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body protocol.LoginRequest true "Login payload"
+// @Success 200 {object} protocol.LoginResponse
+// @Failure 400 {object} protocol.ProtocolError
+// @Failure 422 {object} protocol.ProtocolError
+// @Failure 500 {object} protocol.ProtocolError
+// @Router /auth/login [post]
 func (c *AuthController) login(ctx *gin.Context) {
-	var request protocol.RegisterRequest
+	var request protocol.LoginRequest
 	if !bindAndValidate(ctx, &request) {
 		return
 	}
@@ -78,13 +101,13 @@ func (c *AuthController) login(ctx *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, services.ErrLoginFailed) {
-			ctx.JSON(http.StatusBadRequest, protocol.ProtocolError{
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, protocol.ProtocolError{
 				Code:    protocol.ProtocolErrorLoginUnsuccessful,
 				Message: "User not found or password is invalid.",
 			})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, protocol.ProtocolError{
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, protocol.ProtocolError{
 			Code:    protocol.ProtocolErrorLoginFailed,
 			Message: "Something went wrong.",
 		})

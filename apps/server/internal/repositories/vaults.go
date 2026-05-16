@@ -45,7 +45,7 @@ type VaultsRepository interface {
 		input UpdateVaultInput,
 	) (*models.Vault, error)
 	// Delete deletes vault with the given ID.
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error
 }
 
 type vaultsRepository struct {
@@ -159,9 +159,10 @@ func (r *vaultsRepository) Update(
 func (r *vaultsRepository) Delete(
 	ctx context.Context,
 	id uuid.UUID,
+	ownerID uuid.UUID,
 ) error {
 	query, args, err := r.sq.Delete("vaults").
-		Where(squirrel.Eq{"id": id}).
+		Where(squirrel.Eq{"id": id, "owner_id": ownerID}).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("failed to build query: %w", err)

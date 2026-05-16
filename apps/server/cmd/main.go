@@ -8,6 +8,13 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// @title Gophkeeper API
+// @version 1.0
+// @description Gophkeeper HTTP API.
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()

@@ -10,6 +10,9 @@ const (
 	// ProtocolErrorInvalidRequest is a generic error code that is returned
 	// when request is invalid (failed to parse, etc.)
 	ProtocolErrorInvalidRequest ProtocolErrorCode = "INVALID_REQUEST"
+	// ProtocolErrorInvalidID is returned when given ID for the resource is
+	// invalid or unparseable.
+	ProtocolErrorInvalidID ProtocolErrorCode = "INVALID_ID"
 
 	// ProtocolErrorDuplicateUser is returned when user with the same email
 	// already registered.
@@ -29,6 +32,19 @@ const (
 	// ProtocolErrorSessionValidationFailed is returned when service was unable
 	// to validate the session.
 	ProtocolErrorSessionValidationFailed ProtocolErrorCode = "SESSION_VALIDATION_FAILED"
+
+	// ProtocolErrorVaultCreationFailed is returned when service was not able
+	// to create a new vault for the user.
+	ProtocolErrorVaultCreationFailed ProtocolErrorCode = "VAULT_CREATION_FAILED"
+	// ProtocolErrorVaultsRetrievalFailed is returned when service was not able
+	// to retrieve user's vaults.
+	ProtocolErrorVaultsRetrievalFailed ProtocolErrorCode = "VAULTS_RETRIEVAL_FAILED"
+	// ProtocolErrorVaultNotFound is returned when no vault is found for the
+	// given ID.
+	ProtocolErrorVaultNotFound ProtocolErrorCode = "VAULT_NOT_FOUND"
+	// ProtocolErrorVaultsDeletionFailed is returned when service was not able
+	// to delete the vault.
+	ProtocolErrorVaultDeletionFailed ProtocolErrorCode = "VAULT_DELETION_FAILED"
 )
 
 // ProtocolError describes the payload of the error response.

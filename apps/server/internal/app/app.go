@@ -28,12 +28,20 @@ func StartApp(cfg *config.AppConfig, logger zerolog.Logger) error {
 	// Creating all required repositories.
 	usersRepository := repositories.NewUsersRepository(pool)
 	sessionsRepository := repositories.NewSessionsRepository(pool)
+	vaultsRepository := repositories.NewVaultsRepository(pool)
+	keyringsRepository := repositories.NewKeyringsRepository(pool)
 
 	// Creating all required services.
 	authService := services.NewAuthService(
 		usersRepository,
 		sessionsRepository,
 		cfg.JWTSecret,
+		logger,
+	)
+	vaultsService := services.NewVaultsService(
+		usersRepository,
+		vaultsRepository,
+		keyringsRepository,
 		logger,
 	)
 
@@ -44,6 +52,9 @@ func StartApp(cfg *config.AppConfig, logger zerolog.Logger) error {
 	// Grouping all routes and controllers that require auth.
 	authorizedRoutesGroup := router.Group("")
 	authorizedRoutesGroup.Use(middlewares.AuthMiddleware(authService))
+
+	vaultsGroup := authorizedRoutesGroup.Group("/vaults")
+	controllers.NewVaultsController(vaultsService).RegisterRoutes(vaultsGroup)
 
 	return router.Run(cfg.ListenAddr)
 }
