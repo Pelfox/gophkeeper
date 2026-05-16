@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/Pelfox/gophkeeper/apps/client/cmd"
@@ -35,7 +37,16 @@ func main() {
 			return fmt.Errorf("failed to load config: %w", err)
 		}
 
-		client, err := api.NewClientWithResponses(serverURL)
+		client, err := api.NewClientWithResponses(
+			serverURL,
+			api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+				if cfg.AccessToken != nil {
+					req.Header.Set("Authorization", "Bearer "+*cfg.AccessToken)
+				}
+
+				return nil
+			}),
+		)
 		if err != nil {
 			return fmt.Errorf("failed to initialize API client: %w", err)
 		}
@@ -48,6 +59,7 @@ func main() {
 	// Add all commands of the CLI.
 	rootCmd.AddCommand(cmd.NewLoginCmd(application))
 	rootCmd.AddCommand(cmd.NewRegisterCmd(application))
+	rootCmd.AddCommand(cmd.NewRootVaultCmd(application))
 
 	// Finally, run the CLI.
 	if err := rootCmd.Execute(); err != nil {

@@ -51,6 +51,12 @@ type ProtocolRegisterRequest = protocol.RegisterRequest
 // ProtocolRegisterResponse defines model for protocol.RegisterResponse.
 type ProtocolRegisterResponse = protocol.RegisterResponse
 
+// ProtocolUpdateVaultRequest defines model for protocol.UpdateVaultRequest.
+type ProtocolUpdateVaultRequest = protocol.UpdateVaultRequest
+
+// ProtocolUpdateVaultResponse defines model for protocol.UpdateVaultResponse.
+type ProtocolUpdateVaultResponse = protocol.UpdateVaultResponse
+
 // bearerAuthContextKey is the context key for BearerAuth security scheme
 type bearerAuthContextKey string
 
@@ -62,6 +68,9 @@ type PostAuthRegisterJSONRequestBody = ProtocolRegisterRequest
 
 // PostVaultsJSONRequestBody defines body for PostVaults for application/json ContentType.
 type PostVaultsJSONRequestBody = ProtocolCreateVaultRequest
+
+// PatchVaultsIdJSONRequestBody defines body for PatchVaultsId for application/json ContentType.
+type PatchVaultsIdJSONRequestBody = ProtocolUpdateVaultRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -156,6 +165,11 @@ type ClientInterface interface {
 
 	// DeleteVaultsId request
 	DeleteVaultsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PatchVaultsIdWithBody request with any body
+	PatchVaultsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchVaultsId(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostAuthLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -244,6 +258,30 @@ func (c *Client) PostVaults(ctx context.Context, body PostVaultsJSONRequestBody,
 
 func (c *Client) DeleteVaultsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteVaultsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchVaultsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchVaultsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchVaultsId(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchVaultsIdRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -435,6 +473,53 @@ func NewDeleteVaultsIdRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewPatchVaultsIdRequest calls the generic PatchVaultsId builder with application/json body
+func NewPatchVaultsIdRequest(server string, id string, body PatchVaultsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchVaultsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPatchVaultsIdRequestWithBody generates requests for PatchVaultsId with any type of body
+func NewPatchVaultsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -498,6 +583,11 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteVaultsIdWithResponse request
 	DeleteVaultsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteVaultsIdResponse, error)
+
+	// PatchVaultsIdWithBodyWithResponse request with any body
+	PatchVaultsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchVaultsIdResponse, error)
+
+	PatchVaultsIdWithResponse(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchVaultsIdResponse, error)
 }
 
 type PostAuthLoginResponse struct {
@@ -665,6 +755,41 @@ func (r DeleteVaultsIdResponse) ContentType() string {
 	return ""
 }
 
+type PatchVaultsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProtocolUpdateVaultResponse
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON404      *ProtocolProtocolError
+	JSON422      *ProtocolProtocolError
+	JSON500      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchVaultsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchVaultsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PatchVaultsIdResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // PostAuthLoginWithBodyWithResponse request with arbitrary body returning *PostAuthLoginResponse
 func (c *ClientWithResponses) PostAuthLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAuthLoginResponse, error) {
 	rsp, err := c.PostAuthLoginWithBody(ctx, contentType, body, reqEditors...)
@@ -732,6 +857,23 @@ func (c *ClientWithResponses) DeleteVaultsIdWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseDeleteVaultsIdResponse(rsp)
+}
+
+// PatchVaultsIdWithBodyWithResponse request with arbitrary body returning *PatchVaultsIdResponse
+func (c *ClientWithResponses) PatchVaultsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchVaultsIdResponse, error) {
+	rsp, err := c.PatchVaultsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchVaultsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PatchVaultsIdWithResponse(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchVaultsIdResponse, error) {
+	rsp, err := c.PatchVaultsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchVaultsIdResponse(rsp)
 }
 
 // ParsePostAuthLoginResponse parses an HTTP response from a PostAuthLoginWithResponse call
@@ -963,6 +1105,67 @@ func ParseDeleteVaultsIdResponse(rsp *http.Response) (*DeleteVaultsIdResponse, e
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchVaultsIdResponse parses an HTTP response from a PatchVaultsIdWithResponse call
+func ParsePatchVaultsIdResponse(rsp *http.Response) (*PatchVaultsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchVaultsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProtocolUpdateVaultResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

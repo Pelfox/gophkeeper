@@ -22,6 +22,9 @@ var (
 	// ErrVaultDeletionFailed is returned when service was not able to delete
 	// the vault.
 	ErrVaultDeletionFailed = errors.New("failed to delete the vault")
+	// ErrVaultUpdateFailed is returned when service was not able to update the
+	// vault.
+	ErrVaultUpdateFailed = errors.New("failed to update the vault")
 )
 
 // VaultResult describes a service-layer vault definition.
@@ -64,12 +67,25 @@ type CreateVaultInput struct {
 	EncryptionKeySize uint32
 }
 
+// UpdateVaultInput describes the parameters to update a vault.
+type UpdateVaultInput struct {
+	// Name is the updated human-friendly name of the vault.
+	Name *string
+}
+
 // VaultsService describe all vault-related operations in a service.
 type VaultsService interface {
 	// Create creates a new vault and returns it.
 	Create(ctx context.Context, input CreateVaultInput) (*VaultResult, error)
 	// GetForUser returns all vaults associated with the given user.
 	GetForUser(ctx context.Context, userID uuid.UUID) ([]VaultResult, error)
+	// Update updates vault with the given ID.
+	Update(
+		ctx context.Context,
+		id uuid.UUID,
+		userID uuid.UUID,
+		input UpdateVaultInput,
+	) (*VaultResult, error)
 	// Delete deletes vault with the given ID.
 	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
@@ -159,6 +175,35 @@ func (s *vaultsService) GetForUser(
 	}
 
 	return vaults, nil
+}
+
+func (s *vaultsService) Update(
+	ctx context.Context,
+	id uuid.UUID,
+	userID uuid.UUID,
+	input UpdateVaultInput,
+) (*VaultResult, error) {
+	vault, err := s.vaultsRepository.Update(ctx, id, userID, repositories.UpdateVaultInput{
+		Name: input.Name,
+	})
+	if err != nil {
+		if errors.Is(err, repositories.ErrVaultNotFound) {
+			return nil, ErrVaultNotFound
+		}
+
+		s.logger.Error().Err(err).
+			Str("vault_id", id.String()).
+			Msg("failed to update the vault")
+		return nil, ErrVaultUpdateFailed
+	}
+
+	return &VaultResult{
+		ID:        vault.ID,
+		OwnerID:   vault.OwnerID,
+		Name:      vault.Name,
+		CreatedAt: vault.CreatedAt,
+		UpdatedAt: vault.UpdatedAt,
+	}, nil
 }
 
 func (s *vaultsService) Delete(

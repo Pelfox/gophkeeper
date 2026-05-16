@@ -68,9 +68,9 @@ type MasterKeyEncryptionResult struct {
 }
 
 // CreateMasterKey creates a random master key for the user's vault deriving
-// the encryption of it from their password. This master key is used for
+// the encryption of it from their vault password. This master key is used for
 // encrypting and decrypting all vault's elements.
-func CreateMasterKey(password []byte) (*MasterKeyEncryptionResult, error) {
+func CreateMasterKey(vaultPassword []byte) (*MasterKeyEncryptionResult, error) {
 	masterKey := make([]byte, masterKeySize)
 	if _, err := rand.Read(masterKey); err != nil {
 		return nil, fmt.Errorf("failed to create master key: %w", err)
@@ -84,10 +84,10 @@ func CreateMasterKey(password []byte) (*MasterKeyEncryptionResult, error) {
 	}
 
 	// Creating an encryption key that later will be used to encrypt master key.
-	// We're deriving it from user's password and a random encryption salt. This
+	// We're deriving it from user's vault password and a random encryption salt. This
 	// value shouldn't be stored.
 	encryptionKey := argon2.IDKey(
-		password,
+		vaultPassword,
 		encryptionSalt,
 		encryptionKeyParameters.TimeCost,
 		encryptionKeyParameters.MemoryCost,
@@ -122,7 +122,7 @@ func CreateMasterKey(password []byte) (*MasterKeyEncryptionResult, error) {
 // DeriveMasterKeyParameters describe all parameters that are needed to derive
 // a master key for the user.
 type DeriveMasterKeyParameters struct {
-	// Password is user's password.
+	// Password is user's vault password.
 	Password []byte
 	// EncryptionSalt holds a raw slice of bytes that were used to generate to
 	// generate encryption key using KDF.

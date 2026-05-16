@@ -42,6 +42,7 @@ type VaultsRepository interface {
 	Update(
 		ctx context.Context,
 		id uuid.UUID,
+		ownerID uuid.UUID,
 		input UpdateVaultInput,
 	) (*models.Vault, error)
 	// Delete deletes vault with the given ID.
@@ -126,6 +127,7 @@ func (r *vaultsRepository) GetForUser(
 func (r *vaultsRepository) Update(
 	ctx context.Context,
 	id uuid.UUID,
+	ownerID uuid.UUID,
 	input UpdateVaultInput,
 ) (*models.Vault, error) {
 	builder := r.sq.Update("vaults")
@@ -135,7 +137,7 @@ func (r *vaultsRepository) Update(
 	}
 
 	query, args, err := builder.Set("updated_at", squirrel.Expr("NOW()")).
-		Where(squirrel.Eq{"id": id}).
+		Where(squirrel.Eq{"id": id, "owner_id": ownerID}).
 		Suffix("RETURNING owner_id, name, created_at, updated_at").
 		ToSql()
 	if err != nil {

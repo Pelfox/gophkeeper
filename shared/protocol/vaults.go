@@ -18,6 +18,25 @@ type ProtocolVault struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// ProtocolVaultItem describes the vault item type that can be sent over the
+// protocol.
+type ProtocolVaultItem struct {
+	// ID is vault's item id.
+	ID uuid.UUID `json:"id"`
+	// VaultID is parent vault's ID.
+	VaultID uuid.UUID `json:"vault_id"`
+	// KeySalt is the salt used to derive the item encryption key.
+	KeySalt []byte
+	// ItemNonce is the nonce used to encrypt the item.
+	ItemNonce []byte
+	// Ciphertext contains the encrypted item data.
+	Ciphertext []byte
+	// CreatedAt is the time the item was created.
+	CreatedAt time.Time
+	// UpdatedAt is the time the item was last updated.
+	UpdatedAt time.Time
+}
+
 // CreateVaultRequest describes the request for the vault creation.
 type CreateVaultRequest struct {
 	// Name is vault's name.
@@ -60,3 +79,19 @@ type UpdateVaultResponse struct {
 
 // ListVaultsResponse describes the response for the list operation of vaults.
 type ListVaultsResponse = []ProtocolVault
+
+// CreateVaultItemRequest describes the request to create a new vault item.
+type CreateVaultItemRequest struct {
+	// KeySalt is the salt used to derive the item encryption key.
+	KeySalt []byte
+	// ItemNonce is the nonce used to encrypt the item.
+	ItemNonce []byte
+	// Ciphertext contains the encrypted item data.
+	Ciphertext []byte
+}
+
+// CreateVaultItemResponse describes the response after vault item has been
+// created.
+type CreateVaultItemResponse struct {
+	ProtocolVaultItem
+}

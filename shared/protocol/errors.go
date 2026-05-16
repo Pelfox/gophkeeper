@@ -45,6 +45,9 @@ const (
 	// ProtocolErrorVaultsDeletionFailed is returned when service was not able
 	// to delete the vault.
 	ProtocolErrorVaultDeletionFailed ProtocolErrorCode = "VAULT_DELETION_FAILED"
+	// ProtocolErrorVaultUpdateFailed is returned when service was not able to
+	// update the vault.
+	ProtocolErrorVaultUpdateFailed ProtocolErrorCode = "VAULT_UPDATE_FAILED"
 )
 
 // ProtocolError describes the payload of the error response.

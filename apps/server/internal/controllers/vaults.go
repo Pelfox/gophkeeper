@@ -28,6 +28,7 @@ func NewVaultsController(vaultsService services.VaultsService) *VaultsController
 func (c *VaultsController) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/", c.create)
 	group.GET("/", c.list)
+	group.PATCH("/:id", c.update)
 	group.DELETE("/:id", c.delete)
 }
 
@@ -122,6 +123,70 @@ func (c *VaultsController) list(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, userVaults)
+}
+
+// update godoc
+// @Summary Updates a specific vault.
+// @Tags vaults
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Vault ID"
+// @Param request body protocol.UpdateVaultRequest true "Vault update payload"
+// @Success 200 {object} protocol.UpdateVaultResponse
+// @Failure 400 {object} protocol.ProtocolError
+// @Failure 401 {object} protocol.ProtocolError
+// @Failure 404 {object} protocol.ProtocolError
+// @Failure 422 {object} protocol.ProtocolError
+// @Failure 500 {object} protocol.ProtocolError
+// @Router /vaults/{id} [patch]
+func (c *VaultsController) update(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, protocol.ProtocolError{
+			Code:    protocol.ProtocolErrorInvalidID,
+			Message: "Provided vault ID is invalid.",
+		})
+		return
+	}
+
+	var request protocol.UpdateVaultRequest
+	if !bindAndValidate(ctx, &request) {
+		return
+	}
+
+	session, ok := internal.SessionFromContext(ctx.Request.Context())
+	if !ok {
+		return
+	}
+
+	vault, err := c.vaultsService.Update(ctx.Request.Context(), id, session.User.ID, services.UpdateVaultInput{
+		Name: request.Name,
+	})
+	if err != nil {
+		if errors.Is(err, services.ErrVaultNotFound) {
+			ctx.AbortWithStatusJSON(http.StatusNotFound, protocol.ProtocolError{
+				Code:    protocol.ProtocolErrorVaultNotFound,
+				Message: "Vault with the given ID was not found.",
+			})
+			return
+		}
+
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, protocol.ProtocolError{
+			Code:    protocol.ProtocolErrorVaultUpdateFailed,
+			Message: "Something went wrong.",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, protocol.UpdateVaultResponse{
+		ProtocolVault: protocol.ProtocolVault{
+			ID:        vault.ID,
+			Name:      vault.Name,
+			CreatedAt: vault.CreatedAt,
+			UpdatedAt: vault.UpdatedAt,
+		},
+	})
 }
 
 // delete godoc
