@@ -18,6 +18,34 @@ type ProtocolVault struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// ProtocolKeyring describes encrypted key material needed to unlock a vault.
+type ProtocolKeyring struct {
+	// VaultID is an ID of the vault this keyring unlocks.
+	VaultID uuid.UUID `json:"vault_id"`
+	// EncryptionSalt holds the raw bytes that were used for the encryption of
+	// master key.
+	EncryptionSalt []byte `json:"encryption_salt"`
+	// EncryptionNonce holds the raw bytes that were used by the encryption
+	// algorithm to encrypt master key.
+	EncryptionNonce []byte `json:"encryption_nonce"`
+	// EncryptedMasterKey holds an actual encrypted master key. This value is
+	// safe to be stored in the database.
+	EncryptedMasterKey []byte `json:"encrypted_master_key"`
+	// EncryptionTimeCost describes amount of passes of the given
+	// EncryptionMemoryCost.
+	EncryptionTimeCost uint32 `json:"encryption_time_cost"`
+	// EncryptionMemoryCost describes how much memory should be used.
+	EncryptionMemoryCost uint32 `json:"encryption_memory_cost"`
+	// EncryptionParallelism describes how much threads should be used.
+	EncryptionParallelism uint32 `json:"encryption_parallelism"`
+	// EncryptionKeySize describes the size of the returned byte slice.
+	EncryptionKeySize uint32 `json:"encryption_key_size"`
+	// CreatedAt is the time the keyring was created.
+	CreatedAt time.Time `json:"created_at"`
+	// UpdatedAt is the time the keyring was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // ProtocolVaultItem describes the vault item type that can be sent over the
 // protocol.
 type ProtocolVaultItem struct {
@@ -75,6 +103,12 @@ type UpdateVaultRequest struct {
 // UpdateVaultResponse describes the response for the vault update request.
 type UpdateVaultResponse struct {
 	ProtocolVault
+}
+
+// GetVaultKeyringResponse describes the response for the vault keyring
+// retrieval request.
+type GetVaultKeyringResponse struct {
+	ProtocolKeyring
 }
 
 // ListVaultsResponse describes the response for the list operation of vaults.

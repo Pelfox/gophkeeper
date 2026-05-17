@@ -25,6 +25,9 @@ var (
 	// ErrVaultUpdateFailed is returned when service was not able to update the
 	// vault.
 	ErrVaultUpdateFailed = errors.New("failed to update the vault")
+	// ErrVaultKeyringRetrievalFailed is returned when service was not able to
+	// retrieve vault's keyring.
+	ErrVaultKeyringRetrievalFailed = errors.New("failed to retrieve vault keyring")
 )
 
 // VaultResult describes a service-layer vault definition.
@@ -38,6 +41,34 @@ type VaultResult struct {
 	// CreatedAt is a timestamp when this vault was created.
 	CreatedAt time.Time
 	// UpdatedAt is a timestamp when this vault was last updated.
+	UpdatedAt time.Time
+}
+
+// KeyringResult describes a service-layer keyring definition.
+type KeyringResult struct {
+	// VaultID is an ID of the vault this keyring unlocks.
+	VaultID uuid.UUID
+	// EncryptionSalt holds the raw bytes that were used for the encryption of
+	// master key.
+	EncryptionSalt []byte
+	// EncryptionNonce holds the raw bytes that were used by the encryption
+	// algorithm to encrypt master key.
+	EncryptionNonce []byte
+	// EncryptedMasterKey holds an actual encrypted master key. This value is
+	// safe to be stored in the database.
+	EncryptedMasterKey []byte
+	// EncryptionTimeCost describes amount of passes of the given
+	// EncryptionMemoryCost.
+	EncryptionTimeCost uint32
+	// EncryptionMemoryCost describes how much memory should be used.
+	EncryptionMemoryCost uint32
+	// EncryptionParallelism describes how much threads should be used.
+	EncryptionParallelism uint32
+	// EncryptionKeySize describes the size of the returned byte slice.
+	EncryptionKeySize uint32
+	// CreatedAt is the time the keyring was created.
+	CreatedAt time.Time
+	// UpdatedAt is the time the keyring was last updated.
 	UpdatedAt time.Time
 }
 
@@ -79,6 +110,8 @@ type VaultsService interface {
 	Create(ctx context.Context, input CreateVaultInput) (*VaultResult, error)
 	// GetForUser returns all vaults associated with the given user.
 	GetForUser(ctx context.Context, userID uuid.UUID) ([]VaultResult, error)
+	// GetKeyring returns keyring associated with the given vault and user.
+	GetKeyring(ctx context.Context, userID uuid.UUID, vaultID uuid.UUID) (*KeyringResult, error)
 	// Update updates vault with the given ID.
 	Update(
 		ctx context.Context,
@@ -175,6 +208,37 @@ func (s *vaultsService) GetForUser(
 	}
 
 	return vaults, nil
+}
+
+func (s *vaultsService) GetKeyring(
+	ctx context.Context,
+	userID uuid.UUID,
+	vaultID uuid.UUID,
+) (*KeyringResult, error) {
+	keyring, err := s.keyringsRepository.Get(ctx, userID, vaultID)
+	if err != nil {
+		if errors.Is(err, repositories.ErrKeyringNotFound) {
+			return nil, ErrVaultNotFound
+		}
+
+		s.logger.Error().Err(err).
+			Str("vault_id", vaultID.String()).
+			Msg("failed to retrieve vault keyring")
+		return nil, ErrVaultKeyringRetrievalFailed
+	}
+
+	return &KeyringResult{
+		VaultID:               keyring.VaultID,
+		EncryptionSalt:        keyring.EncryptionSalt,
+		EncryptionNonce:       keyring.EncryptionNonce,
+		EncryptedMasterKey:    keyring.EncryptedMasterKey,
+		EncryptionTimeCost:    keyring.EncryptionTimeCost,
+		EncryptionMemoryCost:  keyring.EncryptionMemoryCost,
+		EncryptionParallelism: keyring.EncryptionParallelism,
+		EncryptionKeySize:     keyring.EncryptionKeySize,
+		CreatedAt:             keyring.CreatedAt,
+		UpdatedAt:             keyring.UpdatedAt,
+	}, nil
 }
 
 func (s *vaultsService) Update(

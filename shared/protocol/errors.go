@@ -48,6 +48,9 @@ const (
 	// ProtocolErrorVaultUpdateFailed is returned when service was not able to
 	// update the vault.
 	ProtocolErrorVaultUpdateFailed ProtocolErrorCode = "VAULT_UPDATE_FAILED"
+	// ProtocolErrorVaultKeyringRetrievalFailed is returned when service was
+	// not able to retrieve vault's keyring.
+	ProtocolErrorVaultKeyringRetrievalFailed ProtocolErrorCode = "VAULT_KEYRING_RETRIEVAL_FAILED"
 
 	// ProtocolErrorVaultItemCreationFailed is returned when service was not
 	// able to create a vault item.

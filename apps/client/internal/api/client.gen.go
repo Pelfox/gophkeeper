@@ -36,6 +36,9 @@ type ProtocolCreateVaultResponse = protocol.CreateVaultResponse
 // ProtocolGetVaultItemResponse defines model for protocol.GetVaultItemResponse.
 type ProtocolGetVaultItemResponse = protocol.GetVaultItemResponse
 
+// ProtocolGetVaultKeyringResponse defines model for protocol.GetVaultKeyringResponse.
+type ProtocolGetVaultKeyringResponse = protocol.GetVaultKeyringResponse
+
 // ProtocolLoginRequest defines model for protocol.LoginRequest.
 type ProtocolLoginRequest = protocol.LoginRequest
 
@@ -213,6 +216,9 @@ type ClientInterface interface {
 	PatchVaultsIdItemsItemIdWithBody(ctx context.Context, id string, itemId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PatchVaultsIdItemsItemId(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVaultsIdKeyring request
+	GetVaultsIdKeyring(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostAuthLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -409,6 +415,18 @@ func (c *Client) PatchVaultsIdItemsItemIdWithBody(ctx context.Context, id string
 
 func (c *Client) PatchVaultsIdItemsItemId(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPatchVaultsIdItemsItemIdRequest(c.Server, id, itemId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVaultsIdKeyring(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVaultsIdKeyringRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -864,6 +882,40 @@ func NewPatchVaultsIdItemsItemIdRequestWithBody(server string, id string, itemId
 	return req, nil
 }
 
+// NewGetVaultsIdKeyringRequest generates requests for GetVaultsIdKeyring
+func NewGetVaultsIdKeyringRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s/keyring", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -951,6 +1003,9 @@ type ClientWithResponsesInterface interface {
 	PatchVaultsIdItemsItemIdWithBodyWithResponse(ctx context.Context, id string, itemId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchVaultsIdItemsItemIdResponse, error)
 
 	PatchVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchVaultsIdItemsItemIdResponse, error)
+
+	// GetVaultsIdKeyringWithResponse request
+	GetVaultsIdKeyringWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetVaultsIdKeyringResponse, error)
 }
 
 type PostAuthLoginResponse struct {
@@ -1322,6 +1377,40 @@ func (r PatchVaultsIdItemsItemIdResponse) ContentType() string {
 	return ""
 }
 
+type GetVaultsIdKeyringResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProtocolGetVaultKeyringResponse
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON404      *ProtocolProtocolError
+	JSON500      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVaultsIdKeyringResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVaultsIdKeyringResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVaultsIdKeyringResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // PostAuthLoginWithBodyWithResponse request with arbitrary body returning *PostAuthLoginResponse
 func (c *ClientWithResponses) PostAuthLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAuthLoginResponse, error) {
 	rsp, err := c.PostAuthLoginWithBody(ctx, contentType, body, reqEditors...)
@@ -1467,6 +1556,15 @@ func (c *ClientWithResponses) PatchVaultsIdItemsItemIdWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParsePatchVaultsIdItemsItemIdResponse(rsp)
+}
+
+// GetVaultsIdKeyringWithResponse request returning *GetVaultsIdKeyringResponse
+func (c *ClientWithResponses) GetVaultsIdKeyringWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetVaultsIdKeyringResponse, error) {
+	rsp, err := c.GetVaultsIdKeyring(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVaultsIdKeyringResponse(rsp)
 }
 
 // ParsePostAuthLoginResponse parses an HTTP response from a PostAuthLoginWithResponse call
@@ -2015,6 +2113,60 @@ func ParsePatchVaultsIdItemsItemIdResponse(rsp *http.Response) (*PatchVaultsIdIt
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVaultsIdKeyringResponse parses an HTTP response from a GetVaultsIdKeyringWithResponse call
+func ParseGetVaultsIdKeyringResponse(rsp *http.Response) (*GetVaultsIdKeyringResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVaultsIdKeyringResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProtocolGetVaultKeyringResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ProtocolProtocolError

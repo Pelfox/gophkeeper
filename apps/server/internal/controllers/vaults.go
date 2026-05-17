@@ -33,6 +33,7 @@ func NewVaultsController(
 func (c *VaultsController) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/", c.create)
 	group.GET("/", c.list)
+	group.GET("/:id/keyring", c.getKeyring)
 	group.PATCH("/:id", c.update)
 	group.DELETE("/:id", c.delete)
 	group.POST("/:id/items", c.createItem)
@@ -133,6 +134,66 @@ func (c *VaultsController) list(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, userVaults)
+}
+
+// getKeyring godoc
+// @Summary Retrieves vault keyring.
+// @Tags vaults
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Vault ID"
+// @Success 200 {object} protocol.GetVaultKeyringResponse
+// @Failure 400 {object} protocol.ProtocolError
+// @Failure 401 {object} protocol.ProtocolError
+// @Failure 404 {object} protocol.ProtocolError
+// @Failure 500 {object} protocol.ProtocolError
+// @Router /vaults/{id}/keyring [get]
+func (c *VaultsController) getKeyring(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, protocol.ProtocolError{
+			Code:    protocol.ProtocolErrorInvalidID,
+			Message: "Provided vault ID is invalid.",
+		})
+		return
+	}
+
+	session, ok := internal.SessionFromContext(ctx.Request.Context())
+	if !ok {
+		return
+	}
+
+	keyring, err := c.vaultsService.GetKeyring(ctx.Request.Context(), session.User.ID, id)
+	if err != nil {
+		if errors.Is(err, services.ErrVaultNotFound) {
+			ctx.AbortWithStatusJSON(http.StatusNotFound, protocol.ProtocolError{
+				Code:    protocol.ProtocolErrorVaultNotFound,
+				Message: "Vault with the given ID was not found.",
+			})
+			return
+		}
+
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, protocol.ProtocolError{
+			Code:    protocol.ProtocolErrorVaultKeyringRetrievalFailed,
+			Message: "Something went wrong.",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, protocol.GetVaultKeyringResponse{
+		ProtocolKeyring: protocol.ProtocolKeyring{
+			VaultID:               keyring.VaultID,
+			EncryptionSalt:        keyring.EncryptionSalt,
+			EncryptionNonce:       keyring.EncryptionNonce,
+			EncryptedMasterKey:    keyring.EncryptedMasterKey,
+			EncryptionTimeCost:    keyring.EncryptionTimeCost,
+			EncryptionMemoryCost:  keyring.EncryptionMemoryCost,
+			EncryptionParallelism: keyring.EncryptionParallelism,
+			EncryptionKeySize:     keyring.EncryptionKeySize,
+			CreatedAt:             keyring.CreatedAt,
+			UpdatedAt:             keyring.UpdatedAt,
+		},
+	})
 }
 
 // update godoc
