@@ -26,15 +26,15 @@ type ProtocolVaultItem struct {
 	// VaultID is parent vault's ID.
 	VaultID uuid.UUID `json:"vault_id"`
 	// KeySalt is the salt used to derive the item encryption key.
-	KeySalt []byte
+	KeySalt []byte `json:"key_salt"`
 	// ItemNonce is the nonce used to encrypt the item.
-	ItemNonce []byte
+	ItemNonce []byte `json:"item_nonce"`
 	// Ciphertext contains the encrypted item data.
-	Ciphertext []byte
+	Ciphertext []byte `json:"ciphertext"`
 	// CreatedAt is the time the item was created.
-	CreatedAt time.Time
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt is the time the item was last updated.
-	UpdatedAt time.Time
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // CreateVaultRequest describes the request for the vault creation.
@@ -83,11 +83,11 @@ type ListVaultsResponse = []ProtocolVault
 // CreateVaultItemRequest describes the request to create a new vault item.
 type CreateVaultItemRequest struct {
 	// KeySalt is the salt used to derive the item encryption key.
-	KeySalt []byte
+	KeySalt []byte `json:"key_salt" binding:"required"`
 	// ItemNonce is the nonce used to encrypt the item.
-	ItemNonce []byte
+	ItemNonce []byte `json:"item_nonce" binding:"required"`
 	// Ciphertext contains the encrypted item data.
-	Ciphertext []byte
+	Ciphertext []byte `json:"ciphertext" binding:"required"`
 }
 
 // CreateVaultItemResponse describes the response after vault item has been
@@ -95,3 +95,28 @@ type CreateVaultItemRequest struct {
 type CreateVaultItemResponse struct {
 	ProtocolVaultItem
 }
+
+// UpdateVaultItemRequest describes the request to update a vault item.
+type UpdateVaultItemRequest struct {
+	// KeySalt is the salt used to derive the item encryption key.
+	KeySalt []byte `json:"key_salt" binding:"required"`
+	// ItemNonce is the nonce used to encrypt the item.
+	ItemNonce []byte `json:"item_nonce" binding:"required"`
+	// Ciphertext contains the encrypted item data.
+	Ciphertext []byte `json:"ciphertext" binding:"required"`
+}
+
+// UpdateVaultItemResponse describes the response after vault item has been
+// updated.
+type UpdateVaultItemResponse struct {
+	ProtocolVaultItem
+}
+
+// GetVaultItemResponse describes the response after vault item has been
+// retrieved.
+type GetVaultItemResponse struct {
+	ProtocolVaultItem
+}
+
+// ListVaultItemsResponse describes the response for listing vault items.
+type ListVaultItemsResponse = []ProtocolVaultItem

@@ -21,11 +21,20 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "BearerAuth.Scopes"
 )
 
+// ProtocolCreateVaultItemRequest defines model for protocol.CreateVaultItemRequest.
+type ProtocolCreateVaultItemRequest = protocol.CreateVaultItemRequest
+
+// ProtocolCreateVaultItemResponse defines model for protocol.CreateVaultItemResponse.
+type ProtocolCreateVaultItemResponse = protocol.CreateVaultItemResponse
+
 // ProtocolCreateVaultRequest defines model for protocol.CreateVaultRequest.
 type ProtocolCreateVaultRequest = protocol.CreateVaultRequest
 
 // ProtocolCreateVaultResponse defines model for protocol.CreateVaultResponse.
 type ProtocolCreateVaultResponse = protocol.CreateVaultResponse
+
+// ProtocolGetVaultItemResponse defines model for protocol.GetVaultItemResponse.
+type ProtocolGetVaultItemResponse = protocol.GetVaultItemResponse
 
 // ProtocolLoginRequest defines model for protocol.LoginRequest.
 type ProtocolLoginRequest = protocol.LoginRequest
@@ -45,11 +54,20 @@ type ProtocolProtocolUser = protocol.ProtocolUser
 // ProtocolProtocolVault defines model for protocol.ProtocolVault.
 type ProtocolProtocolVault = protocol.ProtocolVault
 
+// ProtocolProtocolVaultItem defines model for protocol.ProtocolVaultItem.
+type ProtocolProtocolVaultItem = protocol.ProtocolVaultItem
+
 // ProtocolRegisterRequest defines model for protocol.RegisterRequest.
 type ProtocolRegisterRequest = protocol.RegisterRequest
 
 // ProtocolRegisterResponse defines model for protocol.RegisterResponse.
 type ProtocolRegisterResponse = protocol.RegisterResponse
+
+// ProtocolUpdateVaultItemRequest defines model for protocol.UpdateVaultItemRequest.
+type ProtocolUpdateVaultItemRequest = protocol.UpdateVaultItemRequest
+
+// ProtocolUpdateVaultItemResponse defines model for protocol.UpdateVaultItemResponse.
+type ProtocolUpdateVaultItemResponse = protocol.UpdateVaultItemResponse
 
 // ProtocolUpdateVaultRequest defines model for protocol.UpdateVaultRequest.
 type ProtocolUpdateVaultRequest = protocol.UpdateVaultRequest
@@ -71,6 +89,12 @@ type PostVaultsJSONRequestBody = ProtocolCreateVaultRequest
 
 // PatchVaultsIdJSONRequestBody defines body for PatchVaultsId for application/json ContentType.
 type PatchVaultsIdJSONRequestBody = ProtocolUpdateVaultRequest
+
+// PostVaultsIdItemsJSONRequestBody defines body for PostVaultsIdItems for application/json ContentType.
+type PostVaultsIdItemsJSONRequestBody = ProtocolCreateVaultItemRequest
+
+// PatchVaultsIdItemsItemIdJSONRequestBody defines body for PatchVaultsIdItemsItemId for application/json ContentType.
+type PatchVaultsIdItemsItemIdJSONRequestBody = ProtocolUpdateVaultItemRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -170,6 +194,25 @@ type ClientInterface interface {
 	PatchVaultsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PatchVaultsId(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVaultsIdItems request
+	GetVaultsIdItems(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostVaultsIdItemsWithBody request with any body
+	PostVaultsIdItemsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostVaultsIdItems(ctx context.Context, id string, body PostVaultsIdItemsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteVaultsIdItemsItemId request
+	DeleteVaultsIdItemsItemId(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVaultsIdItemsItemId request
+	GetVaultsIdItemsItemId(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PatchVaultsIdItemsItemIdWithBody request with any body
+	PatchVaultsIdItemsItemIdWithBody(ctx context.Context, id string, itemId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchVaultsIdItemsItemId(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostAuthLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -282,6 +325,90 @@ func (c *Client) PatchVaultsIdWithBody(ctx context.Context, id string, contentTy
 
 func (c *Client) PatchVaultsId(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPatchVaultsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVaultsIdItems(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVaultsIdItemsRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostVaultsIdItemsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostVaultsIdItemsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostVaultsIdItems(ctx context.Context, id string, body PostVaultsIdItemsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostVaultsIdItemsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteVaultsIdItemsItemId(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteVaultsIdItemsItemIdRequest(c.Server, id, itemId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVaultsIdItemsItemId(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVaultsIdItemsItemIdRequest(c.Server, id, itemId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchVaultsIdItemsItemIdWithBody(ctx context.Context, id string, itemId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchVaultsIdItemsItemIdRequestWithBody(c.Server, id, itemId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchVaultsIdItemsItemId(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchVaultsIdItemsItemIdRequest(c.Server, id, itemId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -520,6 +647,223 @@ func NewPatchVaultsIdRequestWithBody(server string, id string, contentType strin
 	return req, nil
 }
 
+// NewGetVaultsIdItemsRequest generates requests for GetVaultsIdItems
+func NewGetVaultsIdItemsRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s/items", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostVaultsIdItemsRequest calls the generic PostVaultsIdItems builder with application/json body
+func NewPostVaultsIdItemsRequest(server string, id string, body PostVaultsIdItemsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostVaultsIdItemsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostVaultsIdItemsRequestWithBody generates requests for PostVaultsIdItems with any type of body
+func NewPostVaultsIdItemsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s/items", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteVaultsIdItemsItemIdRequest generates requests for DeleteVaultsIdItemsItemId
+func NewDeleteVaultsIdItemsItemIdRequest(server string, id string, itemId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "item_id", itemId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s/items/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetVaultsIdItemsItemIdRequest generates requests for GetVaultsIdItemsItemId
+func NewGetVaultsIdItemsItemIdRequest(server string, id string, itemId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "item_id", itemId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s/items/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPatchVaultsIdItemsItemIdRequest calls the generic PatchVaultsIdItemsItemId builder with application/json body
+func NewPatchVaultsIdItemsItemIdRequest(server string, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchVaultsIdItemsItemIdRequestWithBody(server, id, itemId, "application/json", bodyReader)
+}
+
+// NewPatchVaultsIdItemsItemIdRequestWithBody generates requests for PatchVaultsIdItemsItemId with any type of body
+func NewPatchVaultsIdItemsItemIdRequestWithBody(server string, id string, itemId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "item_id", itemId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/vaults/%s/items/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -588,6 +932,25 @@ type ClientWithResponsesInterface interface {
 	PatchVaultsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchVaultsIdResponse, error)
 
 	PatchVaultsIdWithResponse(ctx context.Context, id string, body PatchVaultsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchVaultsIdResponse, error)
+
+	// GetVaultsIdItemsWithResponse request
+	GetVaultsIdItemsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetVaultsIdItemsResponse, error)
+
+	// PostVaultsIdItemsWithBodyWithResponse request with any body
+	PostVaultsIdItemsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostVaultsIdItemsResponse, error)
+
+	PostVaultsIdItemsWithResponse(ctx context.Context, id string, body PostVaultsIdItemsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostVaultsIdItemsResponse, error)
+
+	// DeleteVaultsIdItemsItemIdWithResponse request
+	DeleteVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*DeleteVaultsIdItemsItemIdResponse, error)
+
+	// GetVaultsIdItemsItemIdWithResponse request
+	GetVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*GetVaultsIdItemsItemIdResponse, error)
+
+	// PatchVaultsIdItemsItemIdWithBodyWithResponse request with any body
+	PatchVaultsIdItemsItemIdWithBodyWithResponse(ctx context.Context, id string, itemId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchVaultsIdItemsItemIdResponse, error)
+
+	PatchVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchVaultsIdItemsItemIdResponse, error)
 }
 
 type PostAuthLoginResponse struct {
@@ -790,6 +1153,175 @@ func (r PatchVaultsIdResponse) ContentType() string {
 	return ""
 }
 
+type GetVaultsIdItemsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]ProtocolProtocolVaultItem
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON500      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVaultsIdItemsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVaultsIdItemsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVaultsIdItemsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type PostVaultsIdItemsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ProtocolCreateVaultItemResponse
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON404      *ProtocolProtocolError
+	JSON422      *ProtocolProtocolError
+	JSON500      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r PostVaultsIdItemsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostVaultsIdItemsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PostVaultsIdItemsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteVaultsIdItemsItemIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON404      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteVaultsIdItemsItemIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteVaultsIdItemsItemIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteVaultsIdItemsItemIdResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetVaultsIdItemsItemIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProtocolGetVaultItemResponse
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON404      *ProtocolProtocolError
+	JSON500      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVaultsIdItemsItemIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVaultsIdItemsItemIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVaultsIdItemsItemIdResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type PatchVaultsIdItemsItemIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProtocolUpdateVaultItemResponse
+	JSON400      *ProtocolProtocolError
+	JSON401      *ProtocolProtocolError
+	JSON404      *ProtocolProtocolError
+	JSON422      *ProtocolProtocolError
+	JSON500      *ProtocolProtocolError
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchVaultsIdItemsItemIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchVaultsIdItemsItemIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PatchVaultsIdItemsItemIdResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // PostAuthLoginWithBodyWithResponse request with arbitrary body returning *PostAuthLoginResponse
 func (c *ClientWithResponses) PostAuthLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAuthLoginResponse, error) {
 	rsp, err := c.PostAuthLoginWithBody(ctx, contentType, body, reqEditors...)
@@ -874,6 +1406,67 @@ func (c *ClientWithResponses) PatchVaultsIdWithResponse(ctx context.Context, id 
 		return nil, err
 	}
 	return ParsePatchVaultsIdResponse(rsp)
+}
+
+// GetVaultsIdItemsWithResponse request returning *GetVaultsIdItemsResponse
+func (c *ClientWithResponses) GetVaultsIdItemsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetVaultsIdItemsResponse, error) {
+	rsp, err := c.GetVaultsIdItems(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVaultsIdItemsResponse(rsp)
+}
+
+// PostVaultsIdItemsWithBodyWithResponse request with arbitrary body returning *PostVaultsIdItemsResponse
+func (c *ClientWithResponses) PostVaultsIdItemsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostVaultsIdItemsResponse, error) {
+	rsp, err := c.PostVaultsIdItemsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostVaultsIdItemsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostVaultsIdItemsWithResponse(ctx context.Context, id string, body PostVaultsIdItemsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostVaultsIdItemsResponse, error) {
+	rsp, err := c.PostVaultsIdItems(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostVaultsIdItemsResponse(rsp)
+}
+
+// DeleteVaultsIdItemsItemIdWithResponse request returning *DeleteVaultsIdItemsItemIdResponse
+func (c *ClientWithResponses) DeleteVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*DeleteVaultsIdItemsItemIdResponse, error) {
+	rsp, err := c.DeleteVaultsIdItemsItemId(ctx, id, itemId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteVaultsIdItemsItemIdResponse(rsp)
+}
+
+// GetVaultsIdItemsItemIdWithResponse request returning *GetVaultsIdItemsItemIdResponse
+func (c *ClientWithResponses) GetVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, reqEditors ...RequestEditorFn) (*GetVaultsIdItemsItemIdResponse, error) {
+	rsp, err := c.GetVaultsIdItemsItemId(ctx, id, itemId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVaultsIdItemsItemIdResponse(rsp)
+}
+
+// PatchVaultsIdItemsItemIdWithBodyWithResponse request with arbitrary body returning *PatchVaultsIdItemsItemIdResponse
+func (c *ClientWithResponses) PatchVaultsIdItemsItemIdWithBodyWithResponse(ctx context.Context, id string, itemId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchVaultsIdItemsItemIdResponse, error) {
+	rsp, err := c.PatchVaultsIdItemsItemIdWithBody(ctx, id, itemId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchVaultsIdItemsItemIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PatchVaultsIdItemsItemIdWithResponse(ctx context.Context, id string, itemId string, body PatchVaultsIdItemsItemIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchVaultsIdItemsItemIdResponse, error) {
+	rsp, err := c.PatchVaultsIdItemsItemId(ctx, id, itemId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchVaultsIdItemsItemIdResponse(rsp)
 }
 
 // ParsePostAuthLoginResponse parses an HTTP response from a PostAuthLoginWithResponse call
@@ -1127,6 +1720,269 @@ func ParsePatchVaultsIdResponse(rsp *http.Response) (*PatchVaultsIdResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ProtocolUpdateVaultResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVaultsIdItemsResponse parses an HTTP response from a GetVaultsIdItemsWithResponse call
+func ParseGetVaultsIdItemsResponse(rsp *http.Response) (*GetVaultsIdItemsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVaultsIdItemsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ProtocolProtocolVaultItem
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostVaultsIdItemsResponse parses an HTTP response from a PostVaultsIdItemsWithResponse call
+func ParsePostVaultsIdItemsResponse(rsp *http.Response) (*PostVaultsIdItemsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostVaultsIdItemsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProtocolCreateVaultItemResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteVaultsIdItemsItemIdResponse parses an HTTP response from a DeleteVaultsIdItemsItemIdWithResponse call
+func ParseDeleteVaultsIdItemsItemIdResponse(rsp *http.Response) (*DeleteVaultsIdItemsItemIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteVaultsIdItemsItemIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVaultsIdItemsItemIdResponse parses an HTTP response from a GetVaultsIdItemsItemIdWithResponse call
+func ParseGetVaultsIdItemsItemIdResponse(rsp *http.Response) (*GetVaultsIdItemsItemIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVaultsIdItemsItemIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProtocolGetVaultItemResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProtocolProtocolError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchVaultsIdItemsItemIdResponse parses an HTTP response from a PatchVaultsIdItemsItemIdWithResponse call
+func ParsePatchVaultsIdItemsItemIdResponse(rsp *http.Response) (*PatchVaultsIdItemsItemIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchVaultsIdItemsItemIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProtocolUpdateVaultItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

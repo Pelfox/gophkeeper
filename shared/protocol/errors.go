@@ -48,6 +48,22 @@ const (
 	// ProtocolErrorVaultUpdateFailed is returned when service was not able to
 	// update the vault.
 	ProtocolErrorVaultUpdateFailed ProtocolErrorCode = "VAULT_UPDATE_FAILED"
+
+	// ProtocolErrorVaultItemCreationFailed is returned when service was not
+	// able to create a vault item.
+	ProtocolErrorVaultItemCreationFailed ProtocolErrorCode = "VAULT_ITEM_CREATION_FAILED"
+	// ProtocolErrorVaultItemUpdateFailed is returned when service was not able
+	// to update a vault item.
+	ProtocolErrorVaultItemUpdateFailed ProtocolErrorCode = "VAULT_ITEM_UPDATE_FAILED"
+	// ProtocolErrorVaultItemNotFound is returned when no vault item is found
+	// for the given ID.
+	ProtocolErrorVaultItemNotFound ProtocolErrorCode = "VAULT_ITEM_NOT_FOUND"
+	// ProtocolErrorVaultItemsRetrievalFailed is returned when service was not
+	// able to retrieve vault items.
+	ProtocolErrorVaultItemsRetrievalFailed ProtocolErrorCode = "VAULT_ITEMS_RETRIEVAL_FAILED"
+	// ProtocolErrorVaultItemDeletionFailed is returned when service was not
+	// able to delete a vault item.
+	ProtocolErrorVaultItemDeletionFailed ProtocolErrorCode = "VAULT_ITEM_DELETION_FAILED"
 )
 
 // ProtocolError describes the payload of the error response.

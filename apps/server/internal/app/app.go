@@ -30,6 +30,7 @@ func StartApp(cfg *config.AppConfig, logger zerolog.Logger) error {
 	sessionsRepository := repositories.NewSessionsRepository(pool)
 	vaultsRepository := repositories.NewVaultsRepository(pool)
 	keyringsRepository := repositories.NewKeyringsRepository(pool)
+	vaultItemsRepository := repositories.NewVaultItemsRepository(pool)
 
 	// Creating all required services.
 	authService := services.NewAuthService(
@@ -44,6 +45,10 @@ func StartApp(cfg *config.AppConfig, logger zerolog.Logger) error {
 		keyringsRepository,
 		logger,
 	)
+	vaultItemsService := services.NewVaultItemsService(
+		vaultItemsRepository,
+		logger,
+	)
 
 	// Grouping routes and controllers.
 	authGroup := router.Group("/auth")
@@ -54,7 +59,8 @@ func StartApp(cfg *config.AppConfig, logger zerolog.Logger) error {
 	authorizedRoutesGroup.Use(middlewares.AuthMiddleware(authService))
 
 	vaultsGroup := authorizedRoutesGroup.Group("/vaults")
-	controllers.NewVaultsController(vaultsService).RegisterRoutes(vaultsGroup)
+	controllers.NewVaultsController(vaultsService, vaultItemsService).
+		RegisterRoutes(vaultsGroup)
 
 	return router.Run(cfg.ListenAddr)
 }
