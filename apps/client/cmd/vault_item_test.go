@@ -140,6 +140,28 @@ func TestRenderVaultItemPassword(t *testing.T) {
 	assertContains(t, output, "Password: secret\n")
 }
 
+// TestRenderVaultItemPasswordWithoutWebsite verifies optional website output.
+func TestRenderVaultItemPasswordWithoutWebsite(t *testing.T) {
+	item := testVaultItem(app.PlaintextVaultItem{
+		Type: app.PlaintextVaultItemTypePassword,
+		Name: "login",
+		Payload: app.PasswordPayload{
+			Password: "secret",
+		},
+	})
+
+	output := captureStdout(t, func() {
+		if err := renderVaultItem(item); err != nil {
+			t.Fatalf("renderVaultItem returned error: %v", err)
+		}
+	})
+
+	if strings.Contains(output, "Website:") {
+		t.Fatalf("expected website to be omitted, got %q", output)
+	}
+	assertContains(t, output, "Password: secret\n")
+}
+
 // TestRenderVaultItemTextNote verifies text note item rendering.
 func TestRenderVaultItemTextNote(t *testing.T) {
 	item := testVaultItem(app.PlaintextVaultItem{
@@ -203,6 +225,23 @@ func TestRenderVaultItemBankCard(t *testing.T) {
 	assertContains(t, output, "CVV: 123\n")
 	assertContains(t, output, "Expiration date: 12/30\n")
 	assertContains(t, output, "Holder name: User Name\n")
+}
+
+// TestRenderVaultItemUnknownPayload verifies fallback payload rendering.
+func TestRenderVaultItemUnknownPayload(t *testing.T) {
+	item := testVaultItem(app.PlaintextVaultItem{
+		Type:    app.PlaintextVaultItemType("unknown"),
+		Name:    "unknown",
+		Payload: struct{}{},
+	})
+
+	output := captureStdout(t, func() {
+		if err := renderVaultItem(item); err != nil {
+			t.Fatalf("renderVaultItem returned error: %v", err)
+		}
+	})
+
+	assertContains(t, output, "Payload: -\n")
 }
 
 // TestSaveBinaryPayloadToTemp verifies that binary payload data is saved.
