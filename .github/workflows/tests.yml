@@ -1,0 +1,34 @@
+name: "Run tests"
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: "${{ matrix.module }}"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - apps/server
+          - apps/client
+
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v6
+
+      - name: "Set up Go"
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "${{ matrix.module }}/go.mod"
+          cache-dependency-path: "${{ matrix.module }}/go.sum"
+
+      - name: "Run module tests"
+        working-directory: "${{ matrix.module }}"
+        run: go test ./...

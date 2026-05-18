@@ -1,0 +1,1080 @@
+components:
+    schemas:
+        protocol.CreateVaultItemRequest:
+            properties:
+                ciphertext:
+                    description: Ciphertext contains the encrypted item data.
+                    items:
+                        type: integer
+                    type: array
+                item_nonce:
+                    description: ItemNonce is the nonce used to encrypt the item.
+                    items:
+                        type: integer
+                    type: array
+                key_salt:
+                    description: KeySalt is the salt used to derive the item encryption key.
+                    items:
+                        type: integer
+                    type: array
+            required:
+                - ciphertext
+                - item_nonce
+                - key_salt
+            type: object
+            x-go-type: protocol.CreateVaultItemRequest
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.CreateVaultItemResponse:
+            properties:
+                ciphertext:
+                    description: Ciphertext contains the encrypted item data.
+                    items:
+                        type: integer
+                    type: array
+                created_at:
+                    description: CreatedAt is the time the item was created.
+                    type: string
+                id:
+                    description: ID is vault's item id.
+                    type: string
+                item_nonce:
+                    description: ItemNonce is the nonce used to encrypt the item.
+                    items:
+                        type: integer
+                    type: array
+                key_salt:
+                    description: KeySalt is the salt used to derive the item encryption key.
+                    items:
+                        type: integer
+                    type: array
+                updated_at:
+                    description: UpdatedAt is the time the item was last updated.
+                    type: string
+                vault_id:
+                    description: VaultID is parent vault's ID.
+                    type: string
+            type: object
+            x-go-type: protocol.CreateVaultItemResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.CreateVaultRequest:
+            properties:
+                encrypted_master_key:
+                    description: |-
+                        EncryptedMasterKey holds an actual encrypted master key. This value is
+                        safe to be stored in the database.
+                    items:
+                        type: integer
+                    type: array
+                encryption_key_size:
+                    description: EncryptionKeySize describes the size of the returned byte slice.
+                    type: integer
+                encryption_memory_cost:
+                    description: EncryptionMemoryCost describes how much memory should be used.
+                    type: integer
+                encryption_nonce:
+                    description: |-
+                        EncryptionNonce holds the raw bytes that were used by the encryption
+                        algorithm to encrypt master key.
+                    items:
+                        type: integer
+                    type: array
+                encryption_parallelism:
+                    description: EncryptionParallelism describes how much threads should be used.
+                    type: integer
+                encryption_salt:
+                    description: |-
+                        EncryptionSalt holds the raw bytes that were used for the encryption of
+                        master key.
+                    items:
+                        type: integer
+                    type: array
+                encryption_time_cost:
+                    description: |-
+                        EncryptionTimeCost describes amount of passes of the given
+                        EncryptionMemoryCost.
+                    type: integer
+                name:
+                    description: Name is vault's name.
+                    maxLength: 64
+                    minLength: 1
+                    type: string
+            required:
+                - encrypted_master_key
+                - encryption_key_size
+                - encryption_memory_cost
+                - encryption_nonce
+                - encryption_parallelism
+                - encryption_salt
+                - encryption_time_cost
+                - name
+            type: object
+            x-go-type: protocol.CreateVaultRequest
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.CreateVaultResponse:
+            properties:
+                created_at:
+                    description: CreatedAt is a timestamp when this vault was created.
+                    type: string
+                id:
+                    description: ID is vault's id.
+                    type: string
+                name:
+                    description: Name is vault's name.
+                    type: string
+                updated_at:
+                    description: UpdatedAt is a timestamp when this vault was last updated.
+                    type: string
+            type: object
+            x-go-type: protocol.CreateVaultResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.GetVaultItemResponse:
+            properties:
+                ciphertext:
+                    description: Ciphertext contains the encrypted item data.
+                    items:
+                        type: integer
+                    type: array
+                created_at:
+                    description: CreatedAt is the time the item was created.
+                    type: string
+                id:
+                    description: ID is vault's item id.
+                    type: string
+                item_nonce:
+                    description: ItemNonce is the nonce used to encrypt the item.
+                    items:
+                        type: integer
+                    type: array
+                key_salt:
+                    description: KeySalt is the salt used to derive the item encryption key.
+                    items:
+                        type: integer
+                    type: array
+                updated_at:
+                    description: UpdatedAt is the time the item was last updated.
+                    type: string
+                vault_id:
+                    description: VaultID is parent vault's ID.
+                    type: string
+            type: object
+            x-go-type: protocol.GetVaultItemResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.GetVaultKeyringResponse:
+            properties:
+                created_at:
+                    description: CreatedAt is the time the keyring was created.
+                    type: string
+                encrypted_master_key:
+                    description: |-
+                        EncryptedMasterKey holds an actual encrypted master key. This value is
+                        safe to be stored in the database.
+                    items:
+                        type: integer
+                    type: array
+                encryption_key_size:
+                    description: EncryptionKeySize describes the size of the returned byte slice.
+                    type: integer
+                encryption_memory_cost:
+                    description: EncryptionMemoryCost describes how much memory should be used.
+                    type: integer
+                encryption_nonce:
+                    description: |-
+                        EncryptionNonce holds the raw bytes that were used by the encryption
+                        algorithm to encrypt master key.
+                    items:
+                        type: integer
+                    type: array
+                encryption_parallelism:
+                    description: EncryptionParallelism describes how much threads should be used.
+                    type: integer
+                encryption_salt:
+                    description: |-
+                        EncryptionSalt holds the raw bytes that were used for the encryption of
+                        master key.
+                    items:
+                        type: integer
+                    type: array
+                encryption_time_cost:
+                    description: |-
+                        EncryptionTimeCost describes amount of passes of the given
+                        EncryptionMemoryCost.
+                    type: integer
+                updated_at:
+                    description: UpdatedAt is the time the keyring was last updated.
+                    type: string
+                vault_id:
+                    description: VaultID is an ID of the vault this keyring unlocks.
+                    type: string
+            type: object
+            x-go-type: protocol.GetVaultKeyringResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.LoginRequest:
+            properties:
+                email:
+                    description: Email is user's email.
+                    type: string
+                password:
+                    description: Password is user's password.
+                    maxLength: 64
+                    minLength: 6
+                    type: string
+            required:
+                - email
+                - password
+            type: object
+            x-go-type: protocol.LoginRequest
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.LoginResponse:
+            properties:
+                access_token:
+                    description: AccessToken is a JWT token that is used to access the API.
+                    type: string
+                expires_at:
+                    description: ExpiresAt is a timestamp when this session expires.
+                    type: string
+                user:
+                    allOf:
+                        - $ref: '#/components/schemas/protocol.ProtocolUser'
+                    description: User is the object of a user that owns this session.
+            type: object
+            x-go-type: protocol.LoginResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.ProtocolError:
+            properties:
+                code:
+                    allOf:
+                        - $ref: '#/components/schemas/protocol.ProtocolErrorCode'
+                    description: Code is a constant code for the error.
+                details:
+                    additionalProperties: {}
+                    description: Details is an optional map with error details.
+                    type: object
+                message:
+                    description: Message is human-readable error message.
+                    type: string
+            type: object
+            x-go-type: protocol.ProtocolError
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.ProtocolErrorCode:
+            enum:
+                - VALIDATION_ERROR
+                - INVALID_REQUEST
+                - INVALID_ID
+                - DUPLICATE_USER
+                - REGISTRATION_FAILED
+                - LOGIN_UNSUCCESSFUL
+                - LOGIN_FAILED
+                - UNAUTHORIZED
+                - SESSION_VALIDATION_FAILED
+                - VAULT_CREATION_FAILED
+                - VAULTS_RETRIEVAL_FAILED
+                - VAULT_NOT_FOUND
+                - VAULT_DELETION_FAILED
+                - VAULT_UPDATE_FAILED
+                - VAULT_KEYRING_RETRIEVAL_FAILED
+                - VAULT_ITEM_CREATION_FAILED
+                - VAULT_ITEM_UPDATE_FAILED
+                - VAULT_ITEM_NOT_FOUND
+                - VAULT_ITEMS_RETRIEVAL_FAILED
+                - VAULT_ITEM_DELETION_FAILED
+            type: string
+            x-enum-varnames:
+                - ProtocolErrorValidationFailed
+                - ProtocolErrorInvalidRequest
+                - ProtocolErrorInvalidID
+                - ProtocolErrorDuplicateUser
+                - ProtocolErrorRegistrationFailed
+                - ProtocolErrorLoginUnsuccessful
+                - ProtocolErrorLoginFailed
+                - ProtocolErrorUnauthorized
+                - ProtocolErrorSessionValidationFailed
+                - ProtocolErrorVaultCreationFailed
+                - ProtocolErrorVaultsRetrievalFailed
+                - ProtocolErrorVaultNotFound
+                - ProtocolErrorVaultDeletionFailed
+                - ProtocolErrorVaultUpdateFailed
+                - ProtocolErrorVaultKeyringRetrievalFailed
+                - ProtocolErrorVaultItemCreationFailed
+                - ProtocolErrorVaultItemUpdateFailed
+                - ProtocolErrorVaultItemNotFound
+                - ProtocolErrorVaultItemsRetrievalFailed
+                - ProtocolErrorVaultItemDeletionFailed
+            x-go-type: protocol.ProtocolErrorCode
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.ProtocolUser:
+            properties:
+                created_at:
+                    description: CreatedAt is a timestamp when this user was created.
+                    type: string
+                email:
+                    description: Email is user's email.
+                    type: string
+                id:
+                    description: ID is user's ID.
+                    type: string
+                updated_at:
+                    description: UpdatedAt is a timestamp when this user was last updated.
+                    type: string
+            type: object
+            x-go-type: protocol.ProtocolUser
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.ProtocolVault:
+            properties:
+                created_at:
+                    description: CreatedAt is a timestamp when this vault was created.
+                    type: string
+                id:
+                    description: ID is vault's id.
+                    type: string
+                name:
+                    description: Name is vault's name.
+                    type: string
+                updated_at:
+                    description: UpdatedAt is a timestamp when this vault was last updated.
+                    type: string
+            type: object
+            x-go-type: protocol.ProtocolVault
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.ProtocolVaultItem:
+            properties:
+                ciphertext:
+                    description: Ciphertext contains the encrypted item data.
+                    items:
+                        type: integer
+                    type: array
+                created_at:
+                    description: CreatedAt is the time the item was created.
+                    type: string
+                id:
+                    description: ID is vault's item id.
+                    type: string
+                item_nonce:
+                    description: ItemNonce is the nonce used to encrypt the item.
+                    items:
+                        type: integer
+                    type: array
+                key_salt:
+                    description: KeySalt is the salt used to derive the item encryption key.
+                    items:
+                        type: integer
+                    type: array
+                updated_at:
+                    description: UpdatedAt is the time the item was last updated.
+                    type: string
+                vault_id:
+                    description: VaultID is parent vault's ID.
+                    type: string
+            type: object
+            x-go-type: protocol.ProtocolVaultItem
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.RegisterRequest:
+            properties:
+                email:
+                    description: Email is user's email.
+                    type: string
+                password:
+                    description: Password is user's password.
+                    maxLength: 64
+                    minLength: 6
+                    type: string
+            required:
+                - email
+                - password
+            type: object
+            x-go-type: protocol.RegisterRequest
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.RegisterResponse:
+            properties:
+                access_token:
+                    description: AccessToken is a JWT token that is used to access the API.
+                    type: string
+                expires_at:
+                    description: ExpiresAt is a timestamp when this session expires.
+                    type: string
+                user:
+                    allOf:
+                        - $ref: '#/components/schemas/protocol.ProtocolUser'
+                    description: User is the object of a user that owns this session.
+            type: object
+            x-go-type: protocol.RegisterResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.UpdateVaultItemRequest:
+            properties:
+                ciphertext:
+                    description: Ciphertext contains the encrypted item data.
+                    items:
+                        type: integer
+                    type: array
+                item_nonce:
+                    description: ItemNonce is the nonce used to encrypt the item.
+                    items:
+                        type: integer
+                    type: array
+                key_salt:
+                    description: KeySalt is the salt used to derive the item encryption key.
+                    items:
+                        type: integer
+                    type: array
+            required:
+                - ciphertext
+                - item_nonce
+                - key_salt
+            type: object
+            x-go-type: protocol.UpdateVaultItemRequest
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.UpdateVaultItemResponse:
+            properties:
+                ciphertext:
+                    description: Ciphertext contains the encrypted item data.
+                    items:
+                        type: integer
+                    type: array
+                created_at:
+                    description: CreatedAt is the time the item was created.
+                    type: string
+                id:
+                    description: ID is vault's item id.
+                    type: string
+                item_nonce:
+                    description: ItemNonce is the nonce used to encrypt the item.
+                    items:
+                        type: integer
+                    type: array
+                key_salt:
+                    description: KeySalt is the salt used to derive the item encryption key.
+                    items:
+                        type: integer
+                    type: array
+                updated_at:
+                    description: UpdatedAt is the time the item was last updated.
+                    type: string
+                vault_id:
+                    description: VaultID is parent vault's ID.
+                    type: string
+            type: object
+            x-go-type: protocol.UpdateVaultItemResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.UpdateVaultRequest:
+            properties:
+                name:
+                    description: Name is a new vault's name.
+                    maxLength: 64
+                    minLength: 1
+                    type: string
+            type: object
+            x-go-type: protocol.UpdateVaultRequest
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+        protocol.UpdateVaultResponse:
+            properties:
+                created_at:
+                    description: CreatedAt is a timestamp when this vault was created.
+                    type: string
+                id:
+                    description: ID is vault's id.
+                    type: string
+                name:
+                    description: Name is vault's name.
+                    type: string
+                updated_at:
+                    description: UpdatedAt is a timestamp when this vault was last updated.
+                    type: string
+            type: object
+            x-go-type: protocol.UpdateVaultResponse
+            x-go-type-import:
+                name: protocol
+                path: github.com/Pelfox/gophkeeper/shared/protocol
+    securitySchemes:
+        BearerAuth:
+            in: header
+            name: Authorization
+            type: apiKey
+info:
+    contact: {}
+    description: Gophkeeper HTTP API.
+    title: Gophkeeper API
+    version: "1.0"
+openapi: 3.0.3
+paths:
+    /auth/login:
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/protocol.LoginRequest'
+                description: Login payload
+                required: true
+                x-originalParamName: request
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.LoginResponse'
+                    description: OK
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "422":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unprocessable Entity
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            summary: Logins user into their account.
+            tags:
+                - auth
+    /auth/register:
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/protocol.RegisterRequest'
+                description: Registration payload
+                required: true
+                x-originalParamName: request
+            responses:
+                "201":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.RegisterResponse'
+                    description: Created
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "409":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Conflict
+                "422":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unprocessable Entity
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            summary: Registers a new user.
+            tags:
+                - auth
+    /vaults/:
+        get:
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/protocol.ProtocolVault'
+                                type: array
+                    description: OK
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: List user's vaults.
+            tags:
+                - vaults
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/protocol.CreateVaultRequest'
+                description: Vault creation payload
+                required: true
+                x-originalParamName: request
+            responses:
+                "201":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.CreateVaultResponse'
+                    description: Created
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "422":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unprocessable Entity
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Creates a new vault.
+            tags:
+                - vaults
+    /vaults/{id}:
+        delete:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "204":
+                    description: No Content
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+            security:
+                - BearerAuth: []
+            summary: Deletes a specific vault.
+            tags:
+                - vaults
+        patch:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/protocol.UpdateVaultRequest'
+                description: Vault update payload
+                required: true
+                x-originalParamName: request
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.UpdateVaultResponse'
+                    description: OK
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+                "422":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unprocessable Entity
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Updates a specific vault.
+            tags:
+                - vaults
+    /vaults/{id}/items:
+        get:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/protocol.ProtocolVaultItem'
+                                type: array
+                    description: OK
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Lists vault items.
+            tags:
+                - vault_items
+        post:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/protocol.CreateVaultItemRequest'
+                description: Vault item creation payload
+                required: true
+                x-originalParamName: request
+            responses:
+                "201":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.CreateVaultItemResponse'
+                    description: Created
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+                "422":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unprocessable Entity
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Creates a new vault item.
+            tags:
+                - vault_items
+    /vaults/{id}/items/{item_id}:
+        delete:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+                - description: Vault item ID
+                  in: path
+                  name: item_id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "204":
+                    description: No Content
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+            security:
+                - BearerAuth: []
+            summary: Deletes a vault item.
+            tags:
+                - vault_items
+        get:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+                - description: Vault item ID
+                  in: path
+                  name: item_id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.GetVaultItemResponse'
+                    description: OK
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Retrieves a vault item.
+            tags:
+                - vault_items
+        patch:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+                - description: Vault item ID
+                  in: path
+                  name: item_id
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/protocol.UpdateVaultItemRequest'
+                description: Vault item update payload
+                required: true
+                x-originalParamName: request
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.UpdateVaultItemResponse'
+                    description: OK
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+                "422":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unprocessable Entity
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Updates a vault item.
+            tags:
+                - vault_items
+    /vaults/{id}/keyring:
+        get:
+            parameters:
+                - description: Vault ID
+                  in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.GetVaultKeyringResponse'
+                    description: OK
+                "400":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Bad Request
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Unauthorized
+                "404":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Not Found
+                "500":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/protocol.ProtocolError'
+                    description: Internal Server Error
+            security:
+                - BearerAuth: []
+            summary: Retrieves vault keyring.
+            tags:
+                - vaults
