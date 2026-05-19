@@ -30,9 +30,9 @@ var (
 // VaultItemResult describes the result of operation with vault item.
 type VaultItemResult struct {
 	// ID is vault's item id.
-	ID uuid.UUID `json:"id"`
+	ID uuid.UUID
 	// VaultID is parent vault's ID.
-	VaultID uuid.UUID `json:"vault_id"`
+	VaultID uuid.UUID
 	// KeySalt is the salt used to derive the item encryption key.
 	KeySalt []byte
 	// ItemNonce is the nonce used to encrypt the item.

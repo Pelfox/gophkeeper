@@ -362,15 +362,7 @@ func (c *VaultsController) createItem(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, protocol.CreateVaultItemResponse{
-		ProtocolVaultItem: protocol.ProtocolVaultItem{
-			ID:         vaultItem.ID,
-			VaultID:    vaultItem.VaultID,
-			KeySalt:    vaultItem.KeySalt,
-			ItemNonce:  vaultItem.ItemNonce,
-			Ciphertext: vaultItem.Ciphertext,
-			CreatedAt:  vaultItem.CreatedAt,
-			UpdatedAt:  vaultItem.UpdatedAt,
-		},
+		ProtocolVaultItem: protocolVaultItemFromService(*vaultItem),
 	})
 }
 
@@ -409,20 +401,7 @@ func (c *VaultsController) listItems(ctx *gin.Context) {
 		return
 	}
 
-	userVaultItems := make([]protocol.ProtocolVaultItem, len(vaultItems))
-	for i, vaultItem := range vaultItems {
-		userVaultItems[i] = protocol.ProtocolVaultItem{
-			ID:         vaultItem.ID,
-			VaultID:    vaultItem.VaultID,
-			KeySalt:    vaultItem.KeySalt,
-			ItemNonce:  vaultItem.ItemNonce,
-			Ciphertext: vaultItem.Ciphertext,
-			CreatedAt:  vaultItem.CreatedAt,
-			UpdatedAt:  vaultItem.UpdatedAt,
-		}
-	}
-
-	ctx.JSON(http.StatusOK, userVaultItems)
+	ctx.JSON(http.StatusOK, protocolVaultItemsFromService(vaultItems))
 }
 
 // getItem godoc
@@ -480,15 +459,7 @@ func (c *VaultsController) getItem(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, protocol.GetVaultItemResponse{
-		ProtocolVaultItem: protocol.ProtocolVaultItem{
-			ID:         vaultItem.ID,
-			VaultID:    vaultItem.VaultID,
-			KeySalt:    vaultItem.KeySalt,
-			ItemNonce:  vaultItem.ItemNonce,
-			Ciphertext: vaultItem.Ciphertext,
-			CreatedAt:  vaultItem.CreatedAt,
-			UpdatedAt:  vaultItem.UpdatedAt,
-		},
+		ProtocolVaultItem: protocolVaultItemFromService(*vaultItem),
 	})
 }
 
@@ -559,15 +530,7 @@ func (c *VaultsController) updateItem(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, protocol.UpdateVaultItemResponse{
-		ProtocolVaultItem: protocol.ProtocolVaultItem{
-			ID:         vaultItem.ID,
-			VaultID:    vaultItem.VaultID,
-			KeySalt:    vaultItem.KeySalt,
-			ItemNonce:  vaultItem.ItemNonce,
-			Ciphertext: vaultItem.Ciphertext,
-			CreatedAt:  vaultItem.CreatedAt,
-			UpdatedAt:  vaultItem.UpdatedAt,
-		},
+		ProtocolVaultItem: protocolVaultItemFromService(*vaultItem),
 	})
 }
 
@@ -625,4 +588,25 @@ func (c *VaultsController) deleteItem(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusNoContent)
+}
+
+func protocolVaultItemsFromService(vaultItems []services.VaultItemResult) []protocol.ProtocolVaultItem {
+	protocolItems := make([]protocol.ProtocolVaultItem, len(vaultItems))
+	for i, vaultItem := range vaultItems {
+		protocolItems[i] = protocolVaultItemFromService(vaultItem)
+	}
+
+	return protocolItems
+}
+
+func protocolVaultItemFromService(vaultItem services.VaultItemResult) protocol.ProtocolVaultItem {
+	return protocol.ProtocolVaultItem{
+		ID:         vaultItem.ID,
+		VaultID:    vaultItem.VaultID,
+		KeySalt:    vaultItem.KeySalt,
+		ItemNonce:  vaultItem.ItemNonce,
+		Ciphertext: vaultItem.Ciphertext,
+		CreatedAt:  vaultItem.CreatedAt,
+		UpdatedAt:  vaultItem.UpdatedAt,
+	}
 }

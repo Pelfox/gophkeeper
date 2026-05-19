@@ -92,17 +92,19 @@ type BankCardPayload struct {
 	HolderName string `json:"holder_name"`
 }
 
+type plaintextPayloadDecoderType = func(json.RawMessage) (any, error)
+
+var plaintextVaultItemPayloadDecoders = map[PlaintextVaultItemType]plaintextPayloadDecoderType{
+	PlaintextVaultItemTypePassword:   decodeVaultItemPayload[PasswordPayload],
+	PlaintextVaultItemTypeTextNote:   decodeVaultItemPayload[TextNotePayload],
+	PlaintextVaultItemTypeBinaryFile: decodeVaultItemPayload[BinaryFilePayload],
+	PlaintextVaultItemTypeBankCard:   decodeVaultItemPayload[BankCardPayload],
+}
+
 // Valid indicates whether plaintext vault item type is supported.
 func (t PlaintextVaultItemType) Valid() bool {
-	switch t {
-	case PlaintextVaultItemTypePassword,
-		PlaintextVaultItemTypeTextNote,
-		PlaintextVaultItemTypeBinaryFile,
-		PlaintextVaultItemTypeBankCard:
-		return true
-	default:
-		return false
-	}
+	_, ok := plaintextVaultItemPayloadDecoders[t]
+	return ok
 }
 
 // CreateVaultItem encrypts plaintext item data locally and stores encrypted
@@ -306,53 +308,9 @@ func (a *App) ListVaultItems(
 			return nil, fmt.Errorf("failed to decrypt vault item %q: %w", encryptedItem.ID, err)
 		}
 
-		var rawItem struct {
-			Type    PlaintextVaultItemType `json:"type"`
-			Name    string                 `json:"name"`
-			Payload json.RawMessage        `json:"payload"`
-		}
-		if err := json.Unmarshal(plaintext, &rawItem); err != nil {
+		item, err := decodePlaintextVaultItem(plaintext)
+		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal vault item %q: %w", encryptedItem.ID, err)
-		}
-
-		if !rawItem.Type.Valid() {
-			return nil, fmt.Errorf("vault item %q has invalid type", encryptedItem.ID)
-		}
-
-		item := PlaintextVaultItem{
-			Type: rawItem.Type,
-			Name: rawItem.Name,
-		}
-
-		switch rawItem.Type {
-		case PlaintextVaultItemTypePassword:
-			var payload PasswordPayload
-			if err := json.Unmarshal(rawItem.Payload, &payload); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal vault item %q payload: %w", encryptedItem.ID, err)
-			}
-
-			item.Payload = payload
-		case PlaintextVaultItemTypeTextNote:
-			var payload TextNotePayload
-			if err := json.Unmarshal(rawItem.Payload, &payload); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal vault item %q payload: %w", encryptedItem.ID, err)
-			}
-
-			item.Payload = payload
-		case PlaintextVaultItemTypeBinaryFile:
-			var payload BinaryFilePayload
-			if err := json.Unmarshal(rawItem.Payload, &payload); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal vault item %q payload: %w", encryptedItem.ID, err)
-			}
-
-			item.Payload = payload
-		case PlaintextVaultItemTypeBankCard:
-			var payload BankCardPayload
-			if err := json.Unmarshal(rawItem.Payload, &payload); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal vault item %q payload: %w", encryptedItem.ID, err)
-			}
-
-			item.Payload = payload
 		}
 
 		items = append(items, VaultItem{
@@ -365,6 +323,42 @@ func (a *App) ListVaultItems(
 	}
 
 	return items, nil
+}
+
+func decodePlaintextVaultItem(plaintext []byte) (PlaintextVaultItem, error) {
+	var rawItem struct {
+		Type    PlaintextVaultItemType `json:"type"`
+		Name    string                 `json:"name"`
+		Payload json.RawMessage        `json:"payload"`
+	}
+	if err := json.Unmarshal(plaintext, &rawItem); err != nil {
+		return PlaintextVaultItem{}, err
+	}
+
+	decoderFunc, ok := plaintextVaultItemPayloadDecoders[rawItem.Type]
+	if !ok {
+		return PlaintextVaultItem{}, ErrInvalidVaultItemType
+	}
+
+	payload, err := decoderFunc(rawItem.Payload)
+	if err != nil {
+		return PlaintextVaultItem{}, fmt.Errorf("failed to unmarshal payload: %w", err)
+	}
+
+	return PlaintextVaultItem{
+		Type:    rawItem.Type,
+		Name:    rawItem.Name,
+		Payload: payload,
+	}, nil
+}
+
+func decodeVaultItemPayload[T any](rawPayload json.RawMessage) (any, error) {
+	var payload T
+	if err := json.Unmarshal(rawPayload, &payload); err != nil {
+		return nil, err
+	}
+
+	return payload, nil
 }
 
 func (a *App) deriveVaultMasterKey(
