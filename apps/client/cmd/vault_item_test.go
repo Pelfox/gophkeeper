@@ -246,13 +246,14 @@ func TestRenderVaultItemUnknownPayload(t *testing.T) {
 
 // TestSaveBinaryPayloadToTemp verifies that binary payload data is saved.
 func TestSaveBinaryPayloadToTemp(t *testing.T) {
-	path, err := saveBinaryPayloadToTemp(app.BinaryFilePayload{
+	path, cleanup, err := saveBinaryPayloadToTemp(app.BinaryFilePayload{
 		Path: "secret.bin",
 		Data: []byte("secret bytes"),
 	})
 	if err != nil {
 		t.Fatalf("saveBinaryPayloadToTemp returned error: %v", err)
 	}
+	defer cleanup()
 
 	data, err := os.ReadFile(path)
 	if err != nil {

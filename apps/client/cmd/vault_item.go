@@ -7,6 +7,7 @@ import (
 
 	"github.com/Pelfox/gophkeeper/apps/client/internal/app"
 	"github.com/Pelfox/gophkeeper/apps/client/internal/terminal"
+	"github.com/Pelfox/gophkeeper/shared/protocol"
 	"github.com/aquasecurity/table"
 	box "github.com/nyaosorg/go-box/v3"
 	"github.com/spf13/cobra"
@@ -32,23 +33,12 @@ func newVaultItemUpdateCmd(application *app.App) *cobra.Command {
 		Use:   "update",
 		Short: "Updates a vault item.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			selectedVault, ok, err := selectVault(cmd, application, "Select vault:")
-			if err != nil || !ok {
-				return err
-			}
-
-			vaultPassword, err := terminal.RequestHiddenUserInput("Enter vault password: ")
-			if err != nil {
-				return fmt.Errorf("failed to get vault password: %w", err)
-			}
-
-			if vaultPassword == "" {
-				return fmt.Errorf("vault password cannot be empty")
-			}
-
-			vaultItems, err := application.ListVaultItems(cmd.Context(), selectedVault, vaultPassword)
+			selectedVault, vaultPassword, vaultItems, ok, err := unlockVaultItems(cmd, application)
 			if err != nil {
 				return err
+			}
+			if !ok {
+				return nil
 			}
 
 			selectedItem, ok, err := selectVaultItem(vaultItems)
@@ -83,22 +73,8 @@ func newVaultItemDeleteCmd(application *app.App) *cobra.Command {
 		Use:   "delete",
 		Short: "Deletes a vault item.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			selectedVault, ok, err := selectVault(cmd, application, "Select vault:")
+			selectedVault, _, vaultItems, ok, err := unlockVaultItems(cmd, application)
 			if err != nil || !ok {
-				return err
-			}
-
-			vaultPassword, err := terminal.RequestHiddenUserInput("Enter vault password: ")
-			if err != nil {
-				return fmt.Errorf("failed to get vault password: %w", err)
-			}
-
-			if vaultPassword == "" {
-				return fmt.Errorf("vault password cannot be empty")
-			}
-
-			vaultItems, err := application.ListVaultItems(cmd.Context(), selectedVault, vaultPassword)
-			if err != nil {
 				return err
 			}
 
@@ -122,22 +98,8 @@ func newVaultItemViewCmd(application *app.App) *cobra.Command {
 		Use:   "view",
 		Short: "Views a vault item.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			selectedVault, ok, err := selectVault(cmd, application, "Select vault:")
+			_, _, vaultItems, ok, err := unlockVaultItems(cmd, application)
 			if err != nil || !ok {
-				return err
-			}
-
-			vaultPassword, err := terminal.RequestHiddenUserInput("Enter vault password: ")
-			if err != nil {
-				return fmt.Errorf("failed to get vault password: %w", err)
-			}
-
-			if vaultPassword == "" {
-				return fmt.Errorf("vault password cannot be empty")
-			}
-
-			vaultItems, err := application.ListVaultItems(cmd.Context(), selectedVault, vaultPassword)
-			if err != nil {
 				return err
 			}
 
@@ -156,22 +118,8 @@ func newVaultItemListCmd(application *app.App) *cobra.Command {
 		Use:   "list",
 		Short: "Lists vault items.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			selectedVault, ok, err := selectVault(cmd, application, "Select vault:")
+			_, _, vaultItems, ok, err := unlockVaultItems(cmd, application)
 			if err != nil || !ok {
-				return err
-			}
-
-			vaultPassword, err := terminal.RequestHiddenUserInput("Enter vault password: ")
-			if err != nil {
-				return fmt.Errorf("failed to get vault password: %w", err)
-			}
-
-			if vaultPassword == "" {
-				return fmt.Errorf("vault password cannot be empty")
-			}
-
-			vaultItems, err := application.ListVaultItems(cmd.Context(), selectedVault, vaultPassword)
-			if err != nil {
 				return err
 			}
 
@@ -237,6 +185,34 @@ func newVaultItemCreateCmd(application *app.App) *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// unlockVaultItems selects a vault, requests its password and returns
+// decrypted vault items.
+func unlockVaultItems(
+	cmd *cobra.Command,
+	application *app.App,
+) (protocol.ProtocolVault, string, []app.VaultItem, bool, error) {
+	selectedVault, ok, err := selectVault(cmd, application, "Select vault:")
+	if err != nil || !ok {
+		return protocol.ProtocolVault{}, "", nil, ok, err
+	}
+
+	vaultPassword, err := terminal.RequestHiddenUserInput("Enter vault password: ")
+	if err != nil {
+		return protocol.ProtocolVault{}, "", nil, false, fmt.Errorf("failed to get vault password: %w", err)
+	}
+
+	if vaultPassword == "" {
+		return protocol.ProtocolVault{}, "", nil, false, fmt.Errorf("vault password cannot be empty")
+	}
+
+	vaultItems, err := application.ListVaultItems(cmd.Context(), selectedVault, vaultPassword)
+	if err != nil {
+		return protocol.ProtocolVault{}, "", nil, false, err
+	}
+
+	return selectedVault, vaultPassword, vaultItems, true, nil
 }
 
 func requestPlaintextVaultItem(namePrompt string) (app.PlaintextVaultItem, error) {
@@ -374,10 +350,11 @@ func renderTextNotePayload(payload app.TextNotePayload) {
 }
 
 func renderBinaryFilePayload(payload app.BinaryFilePayload) error {
-	path, err := saveBinaryPayloadToTemp(payload)
+	path, cleanup, err := saveBinaryPayloadToTemp(payload)
 	if err != nil {
 		return err
 	}
+	defer cleanup()
 
 	fmt.Fprintf(os.Stdout, "Path: %s\n", payload.Path)
 	fmt.Fprintf(os.Stdout, "Size: %d bytes\n", len(payload.Data))
@@ -393,10 +370,15 @@ func renderBankCardPayload(payload app.BankCardPayload) {
 	fmt.Fprintf(os.Stdout, "Holder name: %s\n", payload.HolderName)
 }
 
-func saveBinaryPayloadToTemp(payload app.BinaryFilePayload) (string, error) {
+// saveBinaryPayloadToTemp writes a binary payload to a temporary file and
+// returns a cleanup function for the created directory.
+func saveBinaryPayloadToTemp(payload app.BinaryFilePayload) (string, func(), error) {
 	dir, err := os.MkdirTemp("", "gophkeeper-vault-item-*")
 	if err != nil {
-		return "", fmt.Errorf("failed to create temporary directory: %w", err)
+		return "", func() {}, fmt.Errorf("failed to create temporary directory: %w", err)
+	}
+	cleanup := func() {
+		_ = os.RemoveAll(dir)
 	}
 
 	name := filepath.Base(payload.Path)
@@ -406,8 +388,9 @@ func saveBinaryPayloadToTemp(payload app.BinaryFilePayload) (string, error) {
 
 	path := filepath.Join(dir, name)
 	if err := os.WriteFile(path, payload.Data, 0600); err != nil {
-		return "", fmt.Errorf("failed to save binary file: %w", err)
+		cleanup()
+		return "", func() {}, fmt.Errorf("failed to save binary file: %w", err)
 	}
 
-	return path, nil
+	return path, cleanup, nil
 }
