@@ -13,11 +13,10 @@ Gophkeeper supports storing multiple types of vault items:
 
 Gophkeeper is a client-server application. The client is a CLI application
 available for macOS, Linux, and Windows. Communication between the client and
-server is done via HTTP/2 and WSS (for synchronization) transport, with TLSv1.3
-security.
+server is done via HTTP/2, with optional TLSv1.3 security.
 
-All encryption is performed on the server side. After registration, each user
-receives a unique 256-bit (32 bytes) master key. The master key is encrypted
+All encryption is performed on the client side. After vault creation, client
+generates a unique 256-bit (32 bytes) master key. The master key is encrypted
 before being stored in the database. Vault items are encrypted individually
 using the user's master key.
 

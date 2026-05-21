@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS vaults (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_vaults_owner_id ON vaults(owner_id);

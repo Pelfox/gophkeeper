@@ -1,0 +1,8 @@
+go 1.26.3
+
+use (
+	./apps/client
+	./apps/server
+	./shared/protocol
+	./tools/openapi-convert
+)
